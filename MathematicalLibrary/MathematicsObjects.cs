@@ -571,5 +571,106 @@ namespace Mathematics
             public bool IsImaginaryPartEqualsToZero { get => _re != 0.0 && _im == 0.0; }
             #endregion
         }
+
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public struct Point2D:IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point2D>, IEnumerable<double>
+        {
+            #region FIELDS
+            private double _x;
+            private double _y;
+            #endregion
+            #region CONSTRUCTORS
+            public Point2D(double x=0.0, double y=0.0)
+            {
+                _x = x;
+                _y = y;
+            }
+
+            public Point2D(Point2D obj) : this(obj._x, obj._y) { }
+            #endregion
+            #region METHODS
+            public bool Equals(Point2D other)
+            {
+                return ((_x == other._x) && (_y == other._y));
+            }
+
+            public IEnumerator<double> GetEnumerator()
+            {
+                yield return _x;
+                yield return _y;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is Point2D) ? Equals((Point2D)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                return _x.GetHashCode() ^ _y.GetHashCode();
+            }
+
+            public string Show()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IMathematicalObject Addition(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IMathematicalObject Subtraction(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IMathematicalObject Multiplication(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IMathematicalObject Division(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool OperationIsEquality(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool OperationIsNotEquality(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool OperationIsMore(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool OperationIsLess(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool OperationIsMoreOrEqual(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool OperationIsLessOrEqual(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+            #endregion
+        }
+
     }
 }
