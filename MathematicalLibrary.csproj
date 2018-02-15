@@ -1,0 +1,135 @@
+﻿<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4254F02F-A381-499A-A055-50AD70032978}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <NoStandardLibraries>false</NoStandardLibraries>
+    <AssemblyName>MathematicalLibrary</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RootNamespace>MathematicalLibrary</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>MathematicalLibrary.pfx</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".gitignore" />
+    <Content Include="MathematicalLibrary\MathematicalLibrary.csproj" />
+    <Content Include="MathematicalLibrary\obj\Release\MathematicalLibrary.csproj.FileListAbsolute.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".git\COMMIT_EDITMSG" />
+    <None Include=".git\config" />
+    <None Include=".git\description" />
+    <None Include=".git\HEAD" />
+    <None Include=".git\hooks\applypatch-msg.sample" />
+    <None Include=".git\hooks\commit-msg.sample" />
+    <None Include=".git\hooks\post-update.sample" />
+    <None Include=".git\hooks\pre-applypatch.sample" />
+    <None Include=".git\hooks\pre-commit.sample" />
+    <None Include=".git\hooks\pre-push.sample" />
+    <None Include=".git\hooks\pre-rebase.sample" />
+    <None Include=".git\hooks\pre-receive.sample" />
+    <None Include=".git\hooks\prepare-commit-msg.sample" />
+    <None Include=".git\hooks\update.sample" />
+    <None Include=".git\index" />
+    <None Include=".git\info\exclude" />
+    <None Include=".git\logs\HEAD" />
+    <None Include=".git\logs\refs\heads\master" />
+    <None Include=".git\logs\refs\remotes\origin\HEAD" />
+    <None Include=".git\logs\refs\remotes\origin\master" />
+    <None Include=".git\objects\06\1b44cc04739b91c57f02a11451973bbd983fdf" />
+    <None Include=".git\objects\25\2d07d5a6dec6f89268cd6c3eac0844f9613b9e" />
+    <None Include=".git\objects\48\cd4daf58ea3a9511e5875ecc79185aec163594" />
+    <None Include=".git\objects\56\d477b58e00ed9381245e502b1f22c1436bd242" />
+    <None Include=".git\objects\6c\439f3f0b3150eff4182d9fc48d315bcdc76534" />
+    <None Include=".git\objects\76\0cc55fbffeea8da7b3f9b3baf12d7e5ca67edd" />
+    <None Include=".git\objects\83\d680c393465bb752092247660172fdfa5d2d6b" />
+    <None Include=".git\objects\84\b70b233235b1949a077376a1bdf37d26f79d2c" />
+    <None Include=".git\objects\94\0794e60f21bbcbd6a04b87b08ac92ab9303511" />
+    <None Include=".git\objects\94\cecf083de15af223d601e9c92274bd40ca16ff" />
+    <None Include=".git\objects\a5\c334bbbfe9ccf05fad5b6b4b17670d52356ea7" />
+    <None Include=".git\objects\b7\25be237b1caea292e3406e098b3f159adff6d5" />
+    <None Include=".git\objects\f1\d5a833c0a00ce9bd4a9ba261e78c0ed737cbe5" />
+    <None Include=".git\packed-refs" />
+    <None Include=".git\refs\heads\master" />
+    <None Include=".git\refs\remotes\origin\HEAD" />
+    <None Include=".git\refs\remotes\origin\master" />
+    <None Include=".vs\MathematicalLibrary\v15\.suo" />
+    <None Include=".vs\ProjectSettings.json" />
+    <None Include=".vs\slnx.sqlite" />
+    <None Include=".vs\VSWorkspaceState.json" />
+    <None Include="MathematicalLibrary.pfx" />
+    <None Include="MathematicalLibrary\obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
+    <None Include="MathematicalLibrary\obj\Debug\MathematicalLibrary.csproj.CoreCompileInputs.cache" />
+    <None Include="MathematicalLibrary\obj\Release\MathematicalLibrary.csproj.CoreCompileInputs.cache" />
+    <None Include="README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="MathematicalLibrary\AnalyticFunctions.cs" />
+    <Compile Include="MathematicalLibrary\MathematicsObjects.cs" />
+    <Compile Include="MathematicalLibrary\obj\Debug\TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs" />
+    <Compile Include="MathematicalLibrary\obj\Debug\TemporaryGeneratedFile_5937a670-0e60-4077-877b-f7221da3dda1.cs" />
+    <Compile Include="MathematicalLibrary\obj\Debug\TemporaryGeneratedFile_E7A71F73-0F8D-4B9B-B56E-8E70B10BC5D3.cs" />
+    <Compile Include="MathematicalLibrary\obj\Release\TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs" />
+    <Compile Include="MathematicalLibrary\obj\Release\TemporaryGeneratedFile_5937a670-0e60-4077-877b-f7221da3dda1.cs" />
+    <Compile Include="MathematicalLibrary\obj\Release\TemporaryGeneratedFile_E7A71F73-0F8D-4B9B-B56E-8E70B10BC5D3.cs" />
+    <Compile Include="MathematicalLibrary\Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include=".git\objects\info\" />
+    <Folder Include=".git\objects\pack\" />
+    <Folder Include=".git\refs\tags\" />
+    <Folder Include="MathematicalLibrary\bin\Debug\" />
+    <Folder Include="MathematicalLibrary\bin\Release\" />
+    <Folder Include="MathematicalLibrary\obj\Debug\TempPE\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
+  <ProjectExtensions>
+    <VisualStudio AllowExistingFolder="true" />
+  </ProjectExtensions>
+</Project>
