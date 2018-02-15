@@ -457,32 +457,32 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
             {
-                return (this + (Complex)obj);
+                return (obj is Complex) ? (this + (Complex)obj) : throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Complex");
             }
 
             IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
             {
-                return (this - (Complex)obj);
+                return (obj is Complex) ? (this - (Complex)obj): throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Complex");
             }
 
             IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
             {
-                return (this * (Complex)obj);
+                return (obj is Complex) ? (this * (Complex)obj): throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Complex");
             }
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
             {
-                return (this / (Complex)obj);
+                return (obj is Complex) ? (this / (Complex)obj): throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Complex");
             }
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
             {
                 return Equals(obj);
-            }
+            } 
 
             bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
             {
-                return !(Equals(obj));
+                return !Equals(obj);
             }
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
