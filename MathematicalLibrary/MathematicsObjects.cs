@@ -111,37 +111,34 @@ namespace Mathematics
                     case "¿": return NaN;
                     default:
                         {
-                            string pattern1 = @"(?i)I";
-                            string pattern2 = @"(?=[+-])";
-                            if (!Regex.IsMatch(s, pattern1, RegexOptions.Compiled))
+                            string pattern = @"(([+-]?[\d]+([.,][\d]+)?)|([+-](?i)i?[\d]+([.,]\d+)?(?i)i?)?([+-](?i)i)?)";
+
+                            if (!Regex.IsMatch(s, @"(?i)i", RegexOptions.Compiled))
                             {
                                 return new Complex(double.Parse(s), 0.0);
                             }
-                            else
+
+                            string[] complexNumber = new string[2];
+                            int i = 0;
+
+                            foreach (Match el in Regex.Matches(s, pattern, RegexOptions.Compiled))
                             {
-                                double re, im;
-                                string rePart = string.Empty, imPart = string.Empty;
+                                if (i > 1) { break; }
 
-                                string[] target = Regex.Split(s, pattern2, RegexOptions.Compiled);
-                                for (int i = 0; i < target.Length; i++)
-                                {
-                                    if (string.IsNullOrEmpty(target[i])) { continue; }
-
-                                    if (Regex.IsMatch(target[i], pattern1, RegexOptions.Compiled))
-                                    {
-                                        imPart = Regex.Replace(target[i], pattern1, string.Empty, RegexOptions.Compiled);
-                                    }
-                                    else
-                                    {
-                                        rePart = target[i];
-                                    }
-                                }
-
-                                re = double.Parse(rePart); im = double.Parse(imPart);
-                                rePart = null; imPart = null;
-
-                                return new Complex(re, im);
+                                complexNumber[i] = el.Value;
+                                i++;
                             }
+
+                            complexNumber[1] = Regex.Replace(complexNumber[1], @"(?i)[i]", string.Empty, RegexOptions.Compiled);
+
+
+                            if (Regex.IsMatch(complexNumber[1], @"\B([+-])\B"))
+                            {
+                                complexNumber[1] = complexNumber[1] + "1,0";
+                            }
+
+                            return complexNumber.Select(str => double.Parse(str)).ToArray<double>();
+
                         }
                 }
             }
@@ -576,8 +573,8 @@ namespace Mathematics
         public struct Point2D:IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point2D>, IEnumerable<double>
         {
             #region FIELDS
-            private double _x;
-            private double _y;
+            private readonly double _x;
+            private readonly double _y;
             #endregion
             #region CONSTRUCTORS
             public Point2D(double x=0.0, double y=0.0)
@@ -669,6 +666,10 @@ namespace Mathematics
             {
                 throw new NotImplementedException();
             }
+            #endregion
+            #region PROPERTIES
+            public double X { get => _x; }
+            public double Y { get => _y; }
             #endregion
         }
 
