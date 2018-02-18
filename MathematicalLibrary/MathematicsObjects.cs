@@ -823,6 +823,11 @@ namespace Mathematics
                 return _x.GetHashCode() ^ _y.GetHashCode();
             }
 
+            public override string ToString()
+            {
+                return $"[X={_x};\tY={_y}]";
+            }
+
             string IMathematicalObject.Show()
             {
                 return ToString();
@@ -892,14 +897,41 @@ namespace Mathematics
         [StructLayout(LayoutKind.Auto),Serializable]
         public sealed class Vector:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Vector>,IEnumerable<double>
         {
+            #region FIELDS
             private readonly double[] _coords;
             private readonly int _dimensions;
-
-            internal Vector(params double[] coords)
+            #endregion
+            #region CONSTRUCTORS
+            public Vector(params double[] coords)
             {
+                if (coords.Length == 1) { throw new ArgumentException("The vector measurement can not be equal to unity"); }
+                else if(coords == null) { _dimensions = 2; _coords = new double[] { 0.0, 0.0 }; return; }
+
                 _dimensions = coords.Length;
                 _coords = new double[_dimensions];
                 _coords = coords.Select(n => n).ToArray<double>();
+            }
+            
+            public Vector(Vector obj):this(obj._coords)
+            {
+
+            }
+
+            public Vector(params int[] coords)
+            {
+                if (coords.Length == 1) { throw new ArgumentException("The vector measurement can not be equal to unity"); }
+                else if (coords == null) { _dimensions = 2; _coords = new double[] { 0.0, 0.0 }; return; }
+
+                _dimensions = coords.Length;
+                _coords = new double[_dimensions];
+                _coords = coords.Select(n => Convert.ToDouble(n)).ToArray<double>();
+            }
+
+            #endregion
+            #region METHODS
+            public IEnumerator<double> GetEnumerator()
+            {
+                return new Enumerator(this);
             }
 
             IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
@@ -917,14 +949,9 @@ namespace Mathematics
                 throw new NotImplementedException();
             }
 
-            IEnumerator<double> IEnumerable<double>.GetEnumerator()
-            {
-                throw new NotImplementedException();
-            }
-
             IEnumerator IEnumerable.GetEnumerator()
             {
-                throw new NotImplementedException();
+                return new Enumerator(this);
             }
 
             IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
@@ -971,6 +998,55 @@ namespace Mathematics
             {
                 throw new NotImplementedException();
             }
+            #endregion
+            #region NESTED TYPE
+            private sealed class Enumerator:IEnumerator<double>
+            {
+                #region FIELDS
+                private Vector obj;
+                private int indexCoords;
+                #endregion
+                #region PROPERTIES
+                public double Current
+                {
+                    get
+                    {
+                        if (indexCoords == -1) { throw new InvalidOperationException("Enumeration not started"); }
+
+                        if (indexCoords == obj._coords.Length) { throw new InvalidOperationException("Past end of list"); }
+
+                        return obj._coords[indexCoords];
+                    }
+                }
+
+                object IEnumerator.Current => Current;
+                #endregion
+                #region CONSTRUCTOR
+                public Enumerator(Vector collecion)
+                {
+                    obj = collecion;
+                    indexCoords = -1;
+                }
+                #endregion
+                #region METHODS
+                void IDisposable.Dispose()
+                {
+
+                }
+
+                public bool MoveNext()
+                {
+                    if (indexCoords >= obj._coords.Length - 1) { return false; }
+                    return ++indexCoords < obj._coords.Length;
+                }
+
+                public void Reset()
+                {
+                    indexCoords = -1;
+                }
+                #endregion
+            }
+            #endregion
         }
 
     }
