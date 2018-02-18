@@ -570,14 +570,14 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public struct Point2D:IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point2D>, IEnumerable<double>
+        public struct Point2D : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point2D>, IEnumerable<double>
         {
             #region FIELDS
             private readonly double _x;
             private readonly double _y;
             #endregion
             #region CONSTRUCTORS
-            public Point2D(double x=0.0, double y=0.0)
+            public Point2D(double x = 0.0, double y = 0.0)
             {
                 _x = x;
                 _y = y;
@@ -585,7 +585,218 @@ namespace Mathematics
 
             public Point2D(Point2D obj) : this(obj._x, obj._y) { }
             #endregion
+            #region STATIC MEMBERS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsInfinity(Point2D p)
+            {
+                return double.IsInfinity(p._x) || double.IsInfinity(p._y);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsXPossitiveInfinity(Point2D p)
+            {
+                return double.IsPositiveInfinity(p._x) && p._y == 0.0;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsYPossitiveInfinity(Point2D p)
+            {
+                return p._x == 0.0 && double.IsPositiveInfinity(p._y);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsXNegativeInfinity(Point2D p)
+            {
+                return double.IsNegativeInfinity(p._x) && p._y == 0.0;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsYNegativeInfinity(Point2D p)
+            {
+                return p._x == 0.0 && double.IsNegativeInfinity(p._y);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsNaN(Point2D p)
+            {
+                return double.IsNaN(p._x) || double.IsNaN(p._y);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsZero(Point2D p)
+            {
+                return p._x == 0.0 && p._y == 0.0;
+            }
+
+            public static Point2D Zero { get => new Point2D(); }
+
+            public static Point2D Infinity { get => new Point2D(double.PositiveInfinity, double.PositiveInfinity); }
+
+            public static Point2D XPossitiveInfinity { get => new Point2D(double.PositiveInfinity, 0.0); }
+
+            public static Point2D YPossitiveInfinity { get => new Point2D(0.0, double.PositiveInfinity); }
+
+            public static Point2D XNegativeInfinity { get => new Point2D(double.NegativeInfinity, 0.0); }
+
+            public static Point2D YNegativeInfinity { get => new Point2D(0.0, double.NegativeInfinity); }
+
+            public static Point2D NaN { get => new Point2D(double.NaN, double.NaN); }
+
+            public static Point2D Epsilon { get => new Point2D(double.Epsilon, double.Epsilon); }
+
+            public static Point2D XEpsilon { get => new Point2D(double.Epsilon, 0.0); }
+
+            public static Point2D YEpsilon { get => new Point2D(0.0, double.Epsilon); }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point2D Parse(string s)
+            {
+                s = s.Replace(" ", string.Empty).Replace(".", ",");
+
+                switch(s)
+                {
+                    case "" : return NaN;
+                    case "{0}": return Zero;
+                    case "{∞}": return Infinity;
+                    case "{¿}": return NaN;
+                    default:
+                        {
+                            string pattern = @"(([+-]?[\d]+([.,][\d]+)?);|([+-]?[\d]+([.,][\d]+)?))";
+                            string[] coords = new string[2];
+                            int i = 0;
+
+                            foreach(Match m in Regex.Matches(s,pattern,RegexOptions.Compiled))
+                            {
+                                if (i > 1) { break; }
+                                coords[i] = m.Value;
+                                i++;
+                            }
+
+                            coords[0] = Regex.Replace(coords[0], ";", string.Empty, RegexOptions.Compiled);
+
+                            if ((string.IsNullOrEmpty(coords[0]))&&(!string.IsNullOrEmpty(coords[1]))) { return new Point2D(0.0, double.Parse(coords[1])); }
+                            else if (string.IsNullOrEmpty(coords[1])&&(!string.IsNullOrEmpty(coords[0]))) { return new Point2D(double.Parse(coords[0]), 0.0); }
+                            return coords.Select(str => double.Parse(str)).ToArray<double>();
+                        }
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryParse(string s, out Point2D p)
+            {
+                p = new Point2D();
+                try
+                {
+                    p = Parse(s);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator==(Point2D a, Point2D b)
+            {
+                return a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator!=(Point2D a, Point2D b)
+            {
+                return !a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator-(Point2D a, Point2D b)
+            {
+                return new Vector(b._x - a._x, b._y - a._y);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point2D operator -(Point2D a)
+            {
+                return new Point2D(-a._x, -a._y);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point2D operator +(Point2D a)
+            {
+                return new Point2D(+a._x, +a._y);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point2D operator++(Point2D a)
+            {
+                return new Point2D(a._x + 1, a._y + 1);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point2D operator--(Point2D a)
+            {
+                return new Point2D(a._x - 1, a._y - 1);
+            }
+            #endregion
+            #region TYPE CONVERSIONS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Point2D(double[] coords)
+            {
+                try
+                {
+                    return new Point2D(coords[0], coords[1]);
+                }
+                catch
+                {
+                    throw new ArgumentException();
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator double[](Point2D p)
+            {
+                return new double[] { p._x, p._y };
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Point2D(double a)
+            {
+                return new Point2D(a, 0.0);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator double(Point2D p)
+            {
+                return p._x;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Point2D(string s)
+            {
+                return Parse(s);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator string(Point2D p)
+            {
+                return p.ToString();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Point2D(Tuple<double,double> coords)
+            {
+                return new Point2D(coords.Item1, coords.Item2);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator Tuple<double, double>(Point2D p)
+            {
+                return new Tuple<double, double>(p._x, p._y);
+            }
+            #endregion
             #region METHODS
+
             public bool Equals(Point2D other)
             {
                 return ((_x == other._x) && (_y == other._y));
@@ -612,65 +823,154 @@ namespace Mathematics
                 return _x.GetHashCode() ^ _y.GetHashCode();
             }
 
-            public string Show()
+            string IMathematicalObject.Show()
             {
-                throw new NotImplementedException();
+                return ToString();
             }
 
-            public IMathematicalObject Addition(IMathematicalObject obj)
+            IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
-            public IMathematicalObject Subtraction(IMathematicalObject obj)
+            IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Point2D) ? (this - (Point2D)obj) : throw new ArgumentException("Type {obj.GetType().Name} can not use arithmetic operations of type Point2D");
             }
 
-            public IMathematicalObject Multiplication(IMathematicalObject obj)
+            IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
-            public IMathematicalObject Division(IMathematicalObject obj)
+            IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
-            public bool OperationIsEquality(IMathematicalObject obj)
+            bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return Equals(obj);
             }
 
-            public bool OperationIsNotEquality(IMathematicalObject obj)
+            bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return !Equals(obj);
             }
 
-            public bool OperationIsMore(IMathematicalObject obj)
+            bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
-            public bool OperationIsLess(IMathematicalObject obj)
+            bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
-            public bool OperationIsMoreOrEqual(IMathematicalObject obj)
+            bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
-            public bool OperationIsLessOrEqual(IMathematicalObject obj)
+            bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            public Point2D Offset(double x, double y)
+            {
+                return new Point2D(_x + x, _y + y);
             }
             #endregion
             #region PROPERTIES
             public double X { get => _x; }
             public double Y { get => _y; }
             #endregion
+        }
+
+        [StructLayout(LayoutKind.Auto),Serializable]
+        public sealed class Vector:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Vector>,IEnumerable<double>
+        {
+            private readonly double[] _coords;
+            private readonly int _dimensions;
+
+            internal Vector(params double[] coords)
+            {
+                _dimensions = coords.Length;
+                _coords = new double[_dimensions];
+                _coords = coords.Select(n => n).ToArray<double>();
+            }
+
+            IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IEquatable<Vector>.Equals(Vector other)
+            {
+                throw new NotImplementedException();
+            }
+
+            IEnumerator<double> IEnumerable<double>.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            string IMathematicalObject.Show()
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
         }
 
     }
