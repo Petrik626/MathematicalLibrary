@@ -929,6 +929,7 @@ namespace Mathematics
 
             #endregion
             #region METHODS
+
             public IEnumerator<double> GetEnumerator()
             {
                 return new Enumerator(this);
@@ -936,7 +937,7 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Vector) ? (this + (Vector)obj) : throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Complex");
             }
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
@@ -944,9 +945,33 @@ namespace Mathematics
                 throw new NotImplementedException();
             }
 
-            bool IEquatable<Vector>.Equals(Vector other)
+            public bool Equals(Vector other)
             {
-                throw new NotImplementedException();
+                IStructuralEquatable se = _coords;
+
+                return _dimensions != other._dimensions ? false : se.Equals(other._coords, StructuralComparisons.StructuralEqualityComparer);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is Vector) ? Equals((Vector)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                int hash = 17;
+
+                for(int i=0; i<_coords.Length; i++)
+                {
+                    hash *= (hash * 31) + _coords[i].GetHashCode();
+                }
+
+                return hash;
+            }
+
+            public override string ToString()
+            {
+                return base.ToString();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -961,43 +986,123 @@ namespace Mathematics
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return Equals(obj);
             }
 
             bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return !Equals(obj);
             }
 
             string IMathematicalObject.Show()
             {
-                throw new NotImplementedException();
+                return ToString();
             }
 
             IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Vector) ? (this - (Vector)obj) : throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Complex");
             }
+            #endregion
+            #region STATIC MEMBERS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsZero(Vector v)
+            {
+                return (v._dimensions == 2) && (v._coords[0] == 0.0) && (v._coords[1] == 0.0);
+            }
+
+            public static Vector Zero { get => new Vector(0.0, 0.0); }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator==(Vector a, Vector b)
+            {
+                return a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator!=(Vector a, Vector b)
+            {
+                return !a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator+(Vector a, Vector b)
+            {
+                if (a._dimensions != b._dimensions) { throw new ArgumentException("Vectors dimensions are not equals"); }
+
+                double[] coords = new double[a._dimensions];
+
+                for(int i=0;i<a._coords.Length;i++)
+                {
+                    coords[i] = a._coords[i] + b._coords[i];
+                }
+
+                return new Vector(coords);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator-(Vector a, Vector b)
+            {
+                if (a._dimensions != b._dimensions) { throw new ArgumentException("Vectors dimensions are not equals"); }
+
+                double[] coords = new double[a._dimensions];
+
+                for (int i = 0; i < a._coords.Length; i++)
+                {
+                    coords[i] = a._coords[i] - b._coords[i];
+                }
+
+                return new Vector(coords);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static double operator*(Vector a, Vector b)
+            {
+                if (a._dimensions != b._dimensions) { throw new ArgumentException("Vectors dimensions are not equals"); }
+                else if (IsZero(a) || IsZero(b)) { return 0.0; }
+
+                double result = 0.0;
+                for(int i=0;i<a._dimensions;i++)
+                {
+                    result += (a._coords[i] * b._coords[i]);
+                }
+
+                return result;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator*(double a, Vector b)
+            {
+                return b._coords.Select(n => a * n).ToArray<double>();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator*(Vector a, double b)
+            {
+                return b * a;
+            }
+
             #endregion
             #region NESTED TYPE
             private sealed class Enumerator:IEnumerator<double>
@@ -1046,6 +1151,15 @@ namespace Mathematics
                 }
                 #endregion
             }
+            #endregion
+            #region TYPE CONVERSIONS
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Vector(double[] coords)
+            {
+                return new Vector(coords);
+            }
+
             #endregion
         }
 
