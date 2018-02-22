@@ -937,7 +937,7 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
             {
-                return (obj is Vector) ? (this + (Vector)obj) : throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Complex");
+                return (obj is Vector) ? (this + (Vector)obj) : throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Vector");
             }
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
@@ -981,7 +981,7 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Vector) ? Cross((Vector)obj) : throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Vector");
             }
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
@@ -1021,7 +1021,14 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
             {
-                return (obj is Vector) ? (this - (Vector)obj) : throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Complex");
+                return (obj is Vector) ? (this - (Vector)obj) : throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Vector");
+            }
+
+            public Vector Cross(Vector obj)//Векторное умножение 
+            {
+                if (_dimensions!=3 && obj._dimensions != 3) { throw new NotSupportedException("This operation has not been supported by mathematical object"); }
+
+                return new Vector((_coords[1] * obj._coords[2] - _coords[2] * obj._coords[1]), -(_coords[0] * obj._coords[2] - _coords[2] * obj._coords[0]), (_coords[0] * obj._coords[1] - _coords[1] * obj._coords[0]));
             }
             #endregion
             #region STATIC MEMBERS
@@ -1103,6 +1110,11 @@ namespace Mathematics
                 return b * a;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Cross(Vector a, Vector b)
+            {
+                return a.Cross(b);
+            }
             #endregion
             #region NESTED TYPE
             private sealed class Enumerator:IEnumerator<double>
