@@ -894,33 +894,39 @@ namespace Mathematics
             #endregion
         }
 
-        [StructLayout(LayoutKind.Auto),Serializable]
-        public sealed class Vector:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Vector>,IEnumerable<double>
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public sealed class Vector : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Vector>, IEnumerable<double>
         {
             #region FIELDS
             private readonly double[] _coords;
             private readonly int _dimensions;
             #endregion
             #region CONSTRUCTORS
+            public Vector()
+            {
+                _dimensions = 2;
+                _coords = new double[] { 0.0, 0.0 };
+            }
+
             public Vector(params double[] coords)
             {
-                if (coords.Length == 1) { throw new ArgumentException("The vector measurement can not be equal to unity"); }
-                else if(coords == null) { _dimensions = 2; _coords = new double[] { 0.0, 0.0 }; return; }
+                if (coords.Length == 1 || coords.Length == 0) { throw new ArgumentException("The vector measurement can not be equal to unity"); }
+                else if (coords == null) { new Vector(); return; }
 
                 _dimensions = coords.Length;
                 _coords = new double[_dimensions];
                 _coords = coords.Select(n => n).ToArray<double>();
             }
-            
-            public Vector(Vector obj):this(obj._coords)
+
+            public Vector(Vector obj) : this(obj._coords)
             {
 
             }
 
             public Vector(params int[] coords)
             {
-                if (coords.Length == 1) { throw new ArgumentException("The vector measurement can not be equal to unity"); }
-                else if (coords == null) { _dimensions = 2; _coords = new double[] { 0.0, 0.0 }; return; }
+                if (coords.Length == 1 || coords.Length == 0) { throw new ArgumentException("The vector measurement can not be equal to unity"); }
+                else if (coords == null) { new Vector(); return; }
 
                 _dimensions = coords.Length;
                 _coords = new double[_dimensions];
@@ -961,7 +967,7 @@ namespace Mathematics
             {
                 int hash = 17;
 
-                for(int i=0; i<_coords.Length; i++)
+                for (int i = 0; i < _coords.Length; i++)
                 {
                     hash *= (hash * 31) + _coords[i].GetHashCode();
                 }
@@ -1026,7 +1032,7 @@ namespace Mathematics
 
             public Vector Cross(Vector obj)//Векторное умножение 
             {
-                if (_dimensions!=3 && obj._dimensions != 3) { throw new NotSupportedException("This operation has not been supported by mathematical object"); }
+                if (_dimensions != 3 && obj._dimensions != 3) { throw new NotSupportedException("This operation has not been supported by mathematical object"); }
 
                 return new Vector((_coords[1] * obj._coords[2] - _coords[2] * obj._coords[1]), -(_coords[0] * obj._coords[2] - _coords[2] * obj._coords[0]), (_coords[0] * obj._coords[1] - _coords[1] * obj._coords[0]));
             }
@@ -1042,25 +1048,51 @@ namespace Mathematics
             public static Vector Zero { get => new Vector(0.0, 0.0); }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool operator==(Vector a, Vector b)
+            public static bool operator ==(Vector a, Vector b)
             {
                 return a.Equals(b);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool operator!=(Vector a, Vector b)
+            public static Vector Parse(string s)
+            {
+                s = s.Replace(".", ",");
+                if (Regex.IsMatch(s, @"\B[\d]+([.,]\d+)?\B|(?i)[A-Z]", RegexOptions.Compiled)) { throw new ArgumentException("This string is not converted in Vector"); }
+
+
+                string[] coords = Regex.Split(s, @" ", RegexOptions.Compiled);
+                return new Vector(coords.Select(n => double.Parse(n)).ToArray<double>());
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryParse(string s, out Vector v)
+            {
+                try
+                {
+                    v = Parse(s);
+                    return true;
+                }
+                catch
+                {
+                    v = new Vector();
+                    return false;
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator !=(Vector a, Vector b)
             {
                 return !a.Equals(b);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Vector operator+(Vector a, Vector b)
+            public static Vector operator +(Vector a, Vector b)
             {
                 if (a._dimensions != b._dimensions) { throw new ArgumentException("Vectors dimensions are not equals"); }
 
                 double[] coords = new double[a._dimensions];
 
-                for(int i=0;i<a._coords.Length;i++)
+                for (int i = 0; i < a._coords.Length; i++)
                 {
                     coords[i] = a._coords[i] + b._coords[i];
                 }
@@ -1069,7 +1101,7 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Vector operator-(Vector a, Vector b)
+            public static Vector operator -(Vector a, Vector b)
             {
                 if (a._dimensions != b._dimensions) { throw new ArgumentException("Vectors dimensions are not equals"); }
 
@@ -1084,13 +1116,13 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static double operator*(Vector a, Vector b)
+            public static double operator *(Vector a, Vector b)
             {
                 if (a._dimensions != b._dimensions) { throw new ArgumentException("Vectors dimensions are not equals"); }
                 else if (IsZero(a) || IsZero(b)) { return 0.0; }
 
                 double result = 0.0;
-                for(int i=0;i<a._dimensions;i++)
+                for (int i = 0; i < a._dimensions; i++)
                 {
                     result += (a._coords[i] * b._coords[i]);
                 }
@@ -1099,13 +1131,13 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Vector operator*(double a, Vector b)
+            public static Vector operator *(double a, Vector b)
             {
                 return b._coords.Select(n => a * n).ToArray<double>();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Vector operator*(Vector a, double b)
+            public static Vector operator *(Vector a, double b)
             {
                 return b * a;
             }
@@ -1117,7 +1149,7 @@ namespace Mathematics
             }
             #endregion
             #region NESTED TYPE
-            private sealed class Enumerator:IEnumerator<double>
+            private sealed class Enumerator : IEnumerator<double>
             {
                 #region FIELDS
                 private Vector obj;
@@ -1165,13 +1197,46 @@ namespace Mathematics
             }
             #endregion
             #region TYPE CONVERSIONS
-            
+
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static implicit operator Vector(double[] coords)
             {
                 return new Vector(coords);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator double[] (Vector v)
+            {
+                return v.ComponentsVector;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Vector(string s)
+            {
+                return Parse(s);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator string (Vector v)
+            {
+                return v.ToString();
+            }
+            #endregion
+            #region PROPERTIES
+            public double Abs
+            { get
+                {
+                    double s = 0.0;
+                    for(int i=0; i<_coords.Length; i++)
+                    {
+                        s += (_coords[i] * _coords[i]);
+                    }
+                    return Math.Sqrt(s);
+                }
+            }
+
+            public int Measurement { get => _dimensions; }
+            public double[] ComponentsVector { get => _coords; }
             #endregion
         }
 
