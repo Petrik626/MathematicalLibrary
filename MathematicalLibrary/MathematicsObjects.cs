@@ -5,6 +5,7 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Text;
 
 namespace Mathematics
 {
@@ -893,6 +894,16 @@ namespace Mathematics
             public double Y { get => _y; }
             #endregion
         }
+    
+        public enum TypesNorm
+        {
+            MaximumNorm, LNorm, EuclideanNorm
+        }
+
+        public enum TypesVectorNormalization
+        {
+            Maximum, LNormalization, Module
+        }
 
         [StructLayout(LayoutKind.Auto), Serializable]
         public sealed class Vector : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Vector>, IEnumerable<double>
@@ -936,6 +947,43 @@ namespace Mathematics
             #endregion
             #region METHODS
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private double MaxNorm()
+            {
+                return _coords.Max(x => Math.Abs(x));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private double LNorm()
+            {
+                return _coords.Sum((x) => Math.Abs(x));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double Norm(TypesNorm types)
+            {
+                switch(types)
+                {
+                    case TypesNorm.MaximumNorm: return MaxNorm();
+                    case TypesNorm.LNorm: return LNorm();
+                    case TypesNorm.EuclideanNorm: return Abs;
+                    default: throw new ArgumentException();
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Vector Normalization(TypesVectorNormalization types)
+            {
+                double diveder = 1.0;
+                switch (types)
+                {
+                    case TypesVectorNormalization.Maximum: diveder = MaxNorm(); return _coords.Select(n => n / diveder).ToArray<double>();
+                    case TypesVectorNormalization.LNormalization: diveder = LNorm(); return _coords.Select(n => n / diveder).ToArray<double>();
+                    case TypesVectorNormalization.Module: diveder = Abs; return _coords.Select(n => n / diveder).ToArray<double>();
+                    default: throw new ArgumentException();
+                }
+            }
+
             public IEnumerator<double> GetEnumerator()
             {
                 return new Enumerator(this);
@@ -977,7 +1025,14 @@ namespace Mathematics
 
             public override string ToString()
             {
-                return base.ToString();
+                StringBuilder sb = new StringBuilder();
+
+                foreach(double el in _coords)
+                {
+                    sb.AppendLine($"{el.ToString()}");
+                }
+
+                return sb.ToString();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -1143,9 +1198,45 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator/(Vector a, double b)
+            {
+                return a._coords.Select(n => n / b).ToArray<double>();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector Cross(Vector a, Vector b)
             {
                 return a.Cross(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator-(Vector v)
+            {
+                return v._coords.Select(n => -n).ToArray<double>();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator+(Vector v)
+            {
+                return v._coords.Select(n => +n).ToArray<double>();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator++(Vector v)
+            {
+                return v._coords.Select(n => n + 1).ToArray<double>();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator--(Vector v)
+            {
+                return v._coords.Select(n => n - 1).ToArray<double>();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Normalization(Vector v, TypesVectorNormalization types)
+            {
+                return v.Normalization(types);
             }
             #endregion
             #region NESTED TYPE
@@ -1237,6 +1328,14 @@ namespace Mathematics
 
             public int Measurement { get => _dimensions; }
             public double[] ComponentsVector { get => _coords; }
+            public double this[int index]
+            {
+                get
+                {
+                    if(index<0 || index > _dimensions - 1) { throw new IndexOutOfRangeException(); }
+                    return _coords[index];
+                }
+            }
             #endregion
         }
 
