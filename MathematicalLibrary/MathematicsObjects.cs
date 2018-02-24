@@ -1314,18 +1314,7 @@ namespace Mathematics
             }
             #endregion
             #region PROPERTIES
-            public double Abs
-            { get
-                {
-                    double s = 0.0;
-                    for(int i=0; i<_coords.Length; i++)
-                    {
-                        s += (_coords[i] * _coords[i]);
-                    }
-                    return Math.Sqrt(s);
-                }
-            }
-
+            public double Abs { get => Math.Sqrt(_coords.Sum(n => n * n)); }
             public int Measurement { get => _dimensions; }
             public double[] ComponentsVector { get => _coords; }
             public double this[int index]
