@@ -1202,26 +1202,6 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Vector operator*(Matrix a, Vector b)
-            {
-                if(a.CountOfRow != b._dimensions) { throw new ArithmeticException("Size of matrix and vector are not equaling each other"); }
-                Vector v = new Vector(a.CountOfColumn);
-
-                double s;
-                for(int i=0; i<a.CountOfRow; i++)
-                {
-                    s = 0.0;
-                    for(int j=0;j<b._dimensions; j++)
-                    {
-                        s = s + a[i, j] * b[j];
-                    }
-                    v._coords[i] = s;
-                }
-
-                return v;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator*(Vector a, Matrix b)
             {
                 if(a._dimensions != b.CountOfColumn) { throw new ArithmeticException("Size of matrix and vector are not equaling each other"); }
@@ -1539,6 +1519,27 @@ namespace Mathematics
                     if (index1 < 0 || index2 < 0 || index1 > _numberOfRow - 1 || index2 > _numberOfColumn - 1) { throw new IndexOutOfRangeException(); }
                     _components[index1, index2] = value;
                 }
+            }
+            #endregion
+            #region STATIC MEMBERS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator*(Matrix a, Vector b)
+            {
+                if (a._numberOfRow != b.Measurement) { throw new ArithmeticException("Size of matrix and vector are not equaling each other"); }
+                double[] components = new double[a._numberOfColumn];
+
+                double s;
+                for (int i = 0; i < a._numberOfRow; i++)
+                {
+                    s = 0.0;
+                    for (int j = 0; j < b.Measurement; j++)
+                    {
+                        s = s + a[i, j] * b[j];
+                    }
+                    components[i] = s;
+                }
+
+                return components;
             }
             #endregion
         }
