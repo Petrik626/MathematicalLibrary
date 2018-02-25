@@ -919,6 +919,22 @@ namespace Mathematics
                 _coords = new double[] { 0.0, 0.0 };
             }
 
+            private Vector(int dimension)
+            {
+                _dimensions = dimension;
+                _coords = new double[_dimensions];
+            }
+
+            public Vector(int dimension, double[] coords)
+            {
+                _dimensions = dimension;
+                _coords = new double[_dimensions];
+                for(int i=0; i<_dimensions; i++)
+                {
+                    _coords[i] = coords[i];
+                }
+            }
+
             public Vector(params double[] coords)
             {
                 if (coords.Length == 1 || coords.Length == 0) { throw new ArgumentException("The vector measurement can not be equal to unity"); }
@@ -1097,7 +1113,7 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsZero(Vector v)
             {
-                return (v._dimensions == 2) && (v._coords[0] == 0.0) && (v._coords[1] == 0.0);
+                return v._coords.Where(n => n == 0.0).Count() == v._dimensions;
             }
 
             public static Vector Zero { get => new Vector(0.0, 0.0); }
@@ -1183,6 +1199,48 @@ namespace Mathematics
                 }
 
                 return result;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator*(Matrix a, Vector b)
+            {
+                if(a.CountOfRow != b._dimensions) { throw new ArithmeticException("Size of matrix and vector are not equaling each other"); }
+                Vector v = new Vector(a.CountOfColumn);
+
+                double s;
+                for(int i=0; i<a.CountOfRow; i++)
+                {
+                    s = 0.0;
+                    for(int j=0;j<b._dimensions; j++)
+                    {
+                        s = s + a[i, j] * b[j];
+                    }
+                    v._coords[i] = s;
+                }
+
+                return v;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator*(Vector a, Matrix b)
+            {
+                if(a._dimensions != b.CountOfColumn) { throw new ArithmeticException("Size of matrix and vector are not equaling each other"); }
+
+                Vector v = new Vector(b.CountOfRow);
+
+                double s;
+                for(int i=0; i<a._dimensions; i++)
+                {
+                    s = 0.0;
+                    for(int j = 0; j<b.CountOfRow; j++)
+                    {
+                        s = s + a[j] * b[j, i];
+                    }
+
+                    v._coords[i] = s;
+                }
+
+                return v;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1312,6 +1370,12 @@ namespace Mathematics
             {
                 return v.ToString();
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator Vector(int[] coords)
+            {
+                return new Vector(coords);
+            }
             #endregion
             #region PROPERTIES
             public double Abs { get => Math.Sqrt(_coords.Sum(n => n * n)); }
@@ -1328,5 +1392,155 @@ namespace Mathematics
             #endregion
         }
 
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public class Matrix:IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Matrix>
+        {
+            #region FIELDS
+            private readonly int _numberOfRow;
+            private readonly int _numberOfColumn;
+            private double[,] _components;
+            #endregion
+            #region CONSTRUCTORS
+            public Matrix(int row, int colums)
+            {
+                _numberOfRow = row;
+                _numberOfColumn = colums;
+                _components = new double[_numberOfRow, _numberOfColumn];
+
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    for(int j=0; j<_numberOfColumn;j++)
+                    {
+                        _components[i, j] = 0.0;
+                    }
+                }
+            }
+
+            public Matrix(int row, int column, double[,] components)
+            {
+                _numberOfRow = row;
+                _numberOfColumn = column;
+                _components = new double[_numberOfRow, _numberOfColumn];
+
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    for(int j=0; j<_numberOfColumn; j++)
+                    {
+                        _components[i, j] = components[i, j];
+                    }
+                }
+            }
+
+            public Matrix(double[,] components):this(components.GetLength(0), components.GetLength(1), components) { }
+
+            public Matrix(Matrix obj) : this(obj._components) { }
+            #endregion
+            #region METHODS
+            public bool Equals(Matrix other)
+            {
+                return ReferenceEquals(this, other);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is Matrix) ? Equals((Matrix)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                return _components.GetHashCode();
+            }
+
+            string IMathematicalObject.Show()
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+            #endregion
+            #region PROPERTIES
+            public int CountOfRow { get => _numberOfRow; }
+            public int CountOfColumn { get => _numberOfColumn; }
+            public double[,] Components
+            {
+                get => _components;
+                set
+                {
+                    if(_components == null) { throw new NullReferenceException(); }
+                    else if(_numberOfRow!=value.GetLength(0) || _numberOfColumn != value.GetLength(1)) { throw new ArgumentException(); }
+                    
+                    for(int i=0; i<_numberOfRow; i++)
+                    {
+                        for(int j=0; j<_numberOfColumn; j++)
+                        {
+                            _components[i, j] = value[i, j];
+                        }
+                    }
+                }
+            }
+
+            public double this[int index1, int index2]
+            {
+                get
+                {
+                    if(index1<0 || index2<0 || index1>_numberOfRow-1 || index2 > _numberOfColumn - 1) { throw new IndexOutOfRangeException(); }
+                    return _components[index1, index2];
+                }
+                set
+                {
+                    if (index1 < 0 || index2 < 0 || index1 > _numberOfRow - 1 || index2 > _numberOfColumn - 1) { throw new IndexOutOfRangeException(); }
+                    _components[index1, index2] = value;
+                }
+            }
+            #endregion
+        }
     }
 }
