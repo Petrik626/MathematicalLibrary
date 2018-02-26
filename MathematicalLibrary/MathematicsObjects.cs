@@ -1437,7 +1437,7 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public override string ToString()
+            public sealed override string ToString()
             {
                 StringBuilder sb = new StringBuilder();
 
@@ -1455,7 +1455,7 @@ namespace Mathematics
 
             string IMathematicalObject.Show()
             {
-                throw new NotImplementedException();
+                return ToString();
             }
 
             IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
