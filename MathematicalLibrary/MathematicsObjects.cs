@@ -1058,7 +1058,7 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
             {
-                return (obj is Vector) ? Cross((Vector)obj) : throw new ArgumentException($"Type {obj.GetType().Name} can not use arithmetic operations of type Vector");
+                return (obj is Vector) ? Cross((Vector)obj) : (obj is Matrix) ? (this * (Matrix)obj) : throw new ArgumentException("Only vector or matrix types allowed");
             }
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
@@ -1204,9 +1204,9 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator*(Vector a, Matrix b)
             {
-                if(a._dimensions != b.CountOfColumn) { throw new ArithmeticException("Size of matrix and vector are not equaling each other"); }
+                if(a._dimensions != b.CountOfRow) { throw new ArithmeticException("Size of matrix and vector are not equaling each other"); }
 
-                Vector v = new Vector(b.CountOfRow);
+                Vector v = new Vector(b.CountOfColumn);
 
                 double s;
                 for(int i=0; i<a._dimensions; i++)
@@ -1438,17 +1438,20 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Matrix) ? (this + (Matrix)obj) : throw new ArgumentException("Only matrix type allowed");
             }
 
             IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Matrix) ? (this - (Matrix)obj) : throw new ArgumentException("Only matrix type allowed");
             }
 
             IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                bool f1 = (obj is Matrix);
+                bool f2 = (obj is Vector);
+
+                return f1 ? (this * (Matrix)obj) : f2 ? (IMathematicalObject)(this * (Vector)obj) : throw new ArgumentException("Only matrix or vector types allowed");
             }
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
@@ -1525,8 +1528,8 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator*(Matrix a, Vector b)
             {
-                if (a._numberOfRow != b.Measurement) { throw new ArithmeticException("Size of matrix and vector are not equaling each other"); }
-                double[] components = new double[a._numberOfColumn];
+                if (a._numberOfColumn != b.Measurement) { throw new ArithmeticException("Size of matrix and vector are not equaling each other"); }
+                double[] components = new double[a._numberOfRow];
 
                 double s;
                 for (int i = 0; i < a._numberOfRow; i++)
@@ -1540,6 +1543,78 @@ namespace Mathematics
                 }
 
                 return components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix operator+(Matrix a, Matrix b)
+            {
+                if(a._numberOfRow != b._numberOfRow || a._numberOfColumn != b._numberOfColumn) { throw new ArgumentException("Sizes of arguments are not equal each other"); }
+
+                double[,] components = new double[a._numberOfRow, a._numberOfColumn];
+
+                for(int i=0;i<a._numberOfRow;i++)
+                {
+                    for(int j=0;j<a._numberOfColumn;j++)
+                    {
+                        components[i, j] = a._components[i, j] + b._components[i, j];
+                    }
+                }
+
+                return new Matrix(components);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix operator-(Matrix a, Matrix b)
+            {
+                if (a._numberOfRow != b._numberOfRow || a._numberOfColumn != b._numberOfColumn) { throw new ArgumentException("Sizes of arguments are not equal each other"); }
+
+                double[,] components = new double[a._numberOfRow, a._numberOfColumn];
+
+                for(int i = 0; i < a._numberOfRow; i++)
+                {
+                    for(int j = 0; j < a._numberOfColumn; j++)
+                    {
+                        components[i, j] = a._components[i, j] - b._components[i, j];
+                    }
+                }
+
+                return new Matrix(components);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix operator*(Matrix a, Matrix b)
+            {
+                if (a._numberOfRow != b._numberOfColumn) { throw new ArgumentException("Number of columns and rows are not equal each other in argument"); }
+
+                double[,] components = new double[a._numberOfRow, b._numberOfColumn];
+                double s;
+
+                for(int i=0; i<components.GetLength(0);i++)
+                {
+                    for(int j=0; j<components.GetLength(1);j++)
+                    {
+                        s = 0.0;
+                        for(int k=0; k<a.CountOfColumn; k++)
+                        {
+                            s += a._components[i, k] * b._components[k, j];
+                        }
+                        components[i, j] = s;
+                    }
+                }
+
+                return new Matrix(components);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator == (Matrix a, Matrix b)
+            {
+                return a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator != (Matrix a, Matrix b)
+            {
+                return !a.Equals(b);
             }
             #endregion
         }
