@@ -909,29 +909,29 @@ namespace Mathematics
         public sealed class Vector : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Vector>, IEnumerable<double>
         {
             #region FIELDS
-            private readonly double[] _coords;
+            private readonly double[] _components;
             private readonly int _dimensions;
             #endregion
             #region CONSTRUCTORS
             public Vector()
             {
                 _dimensions = 2;
-                _coords = new double[] { 0.0, 0.0 };
+                _components = new double[] { 0.0, 0.0 };
             }
 
             private Vector(int dimension)
             {
                 _dimensions = dimension;
-                _coords = new double[_dimensions];
+                _components = new double[_dimensions];
             }
 
             public Vector(int dimension, double[] coords)
             {
                 _dimensions = dimension;
-                _coords = new double[_dimensions];
+                _components = new double[_dimensions];
                 for(int i=0; i<_dimensions; i++)
                 {
-                    _coords[i] = coords[i];
+                    _components[i] = coords[i];
                 }
             }
 
@@ -941,11 +941,11 @@ namespace Mathematics
                 else if (coords == null) { new Vector(); return; }
 
                 _dimensions = coords.Length;
-                _coords = new double[_dimensions];
-                _coords = coords.Select(n => n).ToArray<double>();
+                _components = new double[_dimensions];
+                _components = coords.Select(n => n).ToArray<double>();
             }
 
-            public Vector(Vector obj) : this(obj._coords)
+            public Vector(Vector obj) : this(obj._components)
             {
 
             }
@@ -956,8 +956,8 @@ namespace Mathematics
                 else if (coords == null) { new Vector(); return; }
 
                 _dimensions = coords.Length;
-                _coords = new double[_dimensions];
-                _coords = coords.Select(n => Convert.ToDouble(n)).ToArray<double>();
+                _components = new double[_dimensions];
+                _components = coords.Select(n => Convert.ToDouble(n)).ToArray<double>();
             }
 
             #endregion
@@ -966,13 +966,13 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private double MaxNorm()
             {
-                return _coords.Max(x => Math.Abs(x));
+                return _components.Max(x => Math.Abs(x));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private double LNorm()
             {
-                return _coords.Sum((x) => Math.Abs(x));
+                return _components.Sum((x) => Math.Abs(x));
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -993,9 +993,9 @@ namespace Mathematics
                 double diveder = 1.0;
                 switch (types)
                 {
-                    case TypesVectorNormalization.Maximum: diveder = MaxNorm(); return _coords.Select(n => n / diveder).ToArray<double>();
-                    case TypesVectorNormalization.LNormalization: diveder = LNorm(); return _coords.Select(n => n / diveder).ToArray<double>();
-                    case TypesVectorNormalization.Module: diveder = Abs; return _coords.Select(n => n / diveder).ToArray<double>();
+                    case TypesVectorNormalization.Maximum: diveder = MaxNorm(); return _components.Select(n => n / diveder).ToArray<double>();
+                    case TypesVectorNormalization.LNormalization: diveder = LNorm(); return _components.Select(n => n / diveder).ToArray<double>();
+                    case TypesVectorNormalization.Module: diveder = Abs; return _components.Select(n => n / diveder).ToArray<double>();
                     default: throw new ArgumentException();
                 }
             }
@@ -1017,9 +1017,9 @@ namespace Mathematics
 
             public bool Equals(Vector other)
             {
-                IStructuralEquatable se = _coords;
+                IStructuralEquatable se = _components;
 
-                return _dimensions != other._dimensions ? false : se.Equals(other._coords, StructuralComparisons.StructuralEqualityComparer);
+                return _dimensions != other._dimensions ? false : se.Equals(other._components, StructuralComparisons.StructuralEqualityComparer);
             }
 
             public override bool Equals(object obj)
@@ -1031,9 +1031,9 @@ namespace Mathematics
             {
                 int hash = 17;
 
-                for (int i = 0; i < _coords.Length; i++)
+                for (int i = 0; i < _components.Length; i++)
                 {
-                    hash *= (hash * 31) + _coords[i].GetHashCode();
+                    hash *= (hash * 31) + _components[i].GetHashCode();
                 }
 
                 return hash;
@@ -1043,7 +1043,7 @@ namespace Mathematics
             {
                 StringBuilder sb = new StringBuilder();
 
-                foreach(double el in _coords)
+                foreach(double el in _components)
                 {
                     sb.AppendLine($"{el.ToString()}");
                 }
@@ -1105,7 +1105,7 @@ namespace Mathematics
             {
                 if (_dimensions != 3 && obj._dimensions != 3) { throw new NotSupportedException("This operation has not been supported by mathematical object"); }
 
-                return new Vector((_coords[1] * obj._coords[2] - _coords[2] * obj._coords[1]), -(_coords[0] * obj._coords[2] - _coords[2] * obj._coords[0]), (_coords[0] * obj._coords[1] - _coords[1] * obj._coords[0]));
+                return new Vector((_components[1] * obj._components[2] - _components[2] * obj._components[1]), -(_components[0] * obj._components[2] - _components[2] * obj._components[0]), (_components[0] * obj._components[1] - _components[1] * obj._components[0]));
             }
             #endregion
             #region STATIC MEMBERS
@@ -1113,7 +1113,7 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsZero(Vector v)
             {
-                return v._coords.Where(n => n == 0.0).Count() == v._dimensions;
+                return v._components.Where(n => n == 0.0).Count() == v._dimensions;
             }
 
             public static Vector Zero { get => new Vector(0.0, 0.0); }
@@ -1163,9 +1163,9 @@ namespace Mathematics
 
                 double[] coords = new double[a._dimensions];
 
-                for (int i = 0; i < a._coords.Length; i++)
+                for (int i = 0; i < a._components.Length; i++)
                 {
-                    coords[i] = a._coords[i] + b._coords[i];
+                    coords[i] = a._components[i] + b._components[i];
                 }
 
                 return new Vector(coords);
@@ -1178,9 +1178,9 @@ namespace Mathematics
 
                 double[] coords = new double[a._dimensions];
 
-                for (int i = 0; i < a._coords.Length; i++)
+                for (int i = 0; i < a._components.Length; i++)
                 {
-                    coords[i] = a._coords[i] - b._coords[i];
+                    coords[i] = a._components[i] - b._components[i];
                 }
 
                 return new Vector(coords);
@@ -1195,7 +1195,7 @@ namespace Mathematics
                 double result = 0.0;
                 for (int i = 0; i < a._dimensions; i++)
                 {
-                    result += (a._coords[i] * b._coords[i]);
+                    result += (a._components[i] * b._components[i]);
                 }
 
                 return result;
@@ -1217,7 +1217,7 @@ namespace Mathematics
                         s = s + a[j] * b[j, i];
                     }
 
-                    v._coords[i] = s;
+                    v._components[i] = s;
                 }
 
                 return v;
@@ -1226,7 +1226,7 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator *(double a, Vector b)
             {
-                return b._coords.Select(n => a * n).ToArray<double>();
+                return b._components.Select(n => a * n).ToArray<double>();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1238,7 +1238,7 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator/(Vector a, double b)
             {
-                return a._coords.Select(n => n / b).ToArray<double>();
+                return a._components.Select(n => n / b).ToArray<double>();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1250,25 +1250,25 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator-(Vector v)
             {
-                return v._coords.Select(n => -n).ToArray<double>();
+                return v._components.Select(n => -n).ToArray<double>();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator+(Vector v)
             {
-                return v._coords.Select(n => +n).ToArray<double>();
+                return v._components.Select(n => +n).ToArray<double>();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator++(Vector v)
             {
-                return v._coords.Select(n => n + 1).ToArray<double>();
+                return v._components.Select(n => n + 1).ToArray<double>();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator--(Vector v)
             {
-                return v._coords.Select(n => n - 1).ToArray<double>();
+                return v._components.Select(n => n - 1).ToArray<double>();
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1291,9 +1291,9 @@ namespace Mathematics
                     {
                         if (indexCoords == -1) { throw new InvalidOperationException("Enumeration not started"); }
 
-                        if (indexCoords == obj._coords.Length) { throw new InvalidOperationException("Past end of list"); }
+                        if (indexCoords == obj._components.Length) { throw new InvalidOperationException("Past end of list"); }
 
-                        return obj._coords[indexCoords];
+                        return obj._components[indexCoords];
                     }
                 }
 
@@ -1314,8 +1314,8 @@ namespace Mathematics
 
                 public bool MoveNext()
                 {
-                    if (indexCoords >= obj._coords.Length - 1) { return false; }
-                    return ++indexCoords < obj._coords.Length;
+                    if (indexCoords >= obj._components.Length - 1) { return false; }
+                    return ++indexCoords < obj._components.Length;
                 }
 
                 public void Reset()
@@ -1358,15 +1358,20 @@ namespace Mathematics
             }
             #endregion
             #region PROPERTIES
-            public double Abs { get => Math.Sqrt(_coords.Sum(n => n * n)); }
+            public double Abs { get => Math.Sqrt(_components.Sum(n => n * n)); }
             public int Measurement { get => _dimensions; }
-            public double[] ComponentsVector { get => _coords; }
+            public double[] ComponentsVector { get => _components; }
             public double this[int index]
             {
                 get
                 {
                     if(index<0 || index > _dimensions - 1) { throw new IndexOutOfRangeException(); }
-                    return _coords[index];
+                    return _components[index];
+                }
+                set
+                {
+                    if (index < 0 || index > _dimensions - 1) { throw new IndexOutOfRangeException(); }
+                    _components[index] = value;
                 }
             }
             #endregion
@@ -1378,7 +1383,7 @@ namespace Mathematics
             #region FIELDS
             private readonly int _numberOfRow;
             private readonly int _numberOfColumn;
-            private double[,] _components;
+            private readonly double[,] _components;
             #endregion
             #region CONSTRUCTORS
             public Matrix(int row, int colums)
@@ -1421,14 +1426,31 @@ namespace Mathematics
                 return ReferenceEquals(this, other);
             }
 
-            public override bool Equals(object obj)
+            public sealed override bool Equals(object obj)
             {
                 return (obj is Matrix) ? Equals((Matrix)obj) : false;
             }
 
-            public override int GetHashCode()
+            public sealed override int GetHashCode()
             {
                 return _components.GetHashCode();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public override string ToString()
+            {
+                StringBuilder sb = new StringBuilder();
+
+                for (int i = 0; i < _numberOfRow; i++)
+                {
+                    for (int j = 0; j < _numberOfColumn; j++)
+                    {
+                        sb.Append($"{_components[i, j]}\t");
+                    }
+                    sb.AppendLine();
+                }
+
+                return sb.ToString();
             }
 
             string IMathematicalObject.Show()
@@ -1488,6 +1510,43 @@ namespace Mathematics
             {
                 throw new NotImplementedException();
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Matrix Transpose()
+            {
+                double[,] components = new double[_numberOfColumn, _numberOfRow];
+
+                for (int i = 0; i < _numberOfRow; i++)
+                {
+                    for (int j = 0; j < _numberOfColumn; j++)
+                    {
+                        components[i, j] = _components[j, i];
+                    }
+
+                }
+                return components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Matrix Minor(int row, int column)
+            {
+                if((row < 0) || (row > _numberOfRow - 1) || (column < 0) || (column > _numberOfColumn - 1)) { throw new ArgumentException("These arguments are bigger than numbers of row and column "); }
+                double[,] components = new double[_numberOfRow - 1, _numberOfColumn - 1];
+                int di = 0, dj = 0;
+
+                for(int i=0; i<_numberOfRow - 1 ; i++)
+                {
+                    if (i == row) { di = 1; }
+                    for(int j=0; j<_numberOfColumn - 1; j++)
+                    {
+                        if(j == column) { dj = 1; }
+                        components[i, j] = _components[i + di, j + dj];
+                    }
+                    dj = 0;
+                }
+
+                return components;
+            }
             #endregion
             #region PROPERTIES
             public int CountOfRow { get => _numberOfRow; }
@@ -1523,6 +1582,9 @@ namespace Mathematics
                     _components[index1, index2] = value;
                 }
             }
+
+            public int AmountOfElements { get => _numberOfRow * _numberOfColumn; }
+            public bool IsSquare { get => _numberOfRow == _numberOfColumn; }
             #endregion
             #region STATIC MEMBERS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1615,6 +1677,52 @@ namespace Mathematics
             public static bool operator != (Matrix a, Matrix b)
             {
                 return !a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix operator*(double a, Matrix b)
+            {
+                double[,] components = new double[b._numberOfRow, b._numberOfColumn];
+
+                for(int i=0;i<b._numberOfRow;i++)
+                {
+                    for(int j=0;j<b._numberOfColumn;j++)
+                    {
+                        components[i, j] = a * b._components[i, j];
+                    }
+                }
+
+                return components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix operator*(Matrix a, double b)
+            {
+                return b * a;
+            }
+            #endregion
+            #region TYPE CONVERSIONS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Matrix(double[,] components)
+            {
+                return new Matrix(components);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator double[,](Matrix obj)
+            {
+                double[,] components = new double[obj._numberOfRow, obj._numberOfColumn];
+
+                for(int i=0; i<obj._numberOfRow; i++)
+                {
+                    for(int j=0; j<obj._numberOfColumn; j++)
+                    {
+                        components[i, j] = obj._components[i, j];
+                    }
+                }
+
+                return components;
             }
             #endregion
         }
