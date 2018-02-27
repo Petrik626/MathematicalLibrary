@@ -1378,7 +1378,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public class Matrix:IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Matrix>
+        public class Matrix : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Matrix>
         {
             #region FIELDS
             private readonly int _numberOfRow;
@@ -1392,9 +1392,9 @@ namespace Mathematics
                 _numberOfColumn = colums;
                 _components = new double[_numberOfRow, _numberOfColumn];
 
-                for(int i=0; i<_numberOfRow; i++)
+                for (int i = 0; i < _numberOfRow; i++)
                 {
-                    for(int j=0; j<_numberOfColumn;j++)
+                    for (int j = 0; j < _numberOfColumn; j++)
                     {
                         _components[i, j] = 0.0;
                     }
@@ -1407,16 +1407,16 @@ namespace Mathematics
                 _numberOfColumn = column;
                 _components = new double[_numberOfRow, _numberOfColumn];
 
-                for(int i=0; i<_numberOfRow; i++)
+                for (int i = 0; i < _numberOfRow; i++)
                 {
-                    for(int j=0; j<_numberOfColumn; j++)
+                    for (int j = 0; j < _numberOfColumn; j++)
                     {
                         _components[i, j] = components[i, j];
                     }
                 }
             }
 
-            public Matrix(double[,] components):this(components.GetLength(0), components.GetLength(1), components) { }
+            public Matrix(double[,] components) : this(components.GetLength(0), components.GetLength(1), components) { }
 
             public Matrix(Matrix obj) : this(obj._components) { }
             #endregion
@@ -1424,11 +1424,11 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private bool IsSymmetricMatrix()
             {
-                for(int i=0; i<_numberOfRow; i++)
+                for (int i = 0; i < _numberOfRow; i++)
                 {
-                    for(int j=0; j<_numberOfColumn; j++)
+                    for (int j = 0; j < _numberOfColumn; j++)
                     {
-                        if((i != j) && (_components[i, j] != _components[j, i])) 
+                        if ((i != j) && (_components[i, j] != _components[j, i]))
                         {
                             return false;
                         }
@@ -1441,11 +1441,11 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private bool IsDiagonalMatrix()
             {
-                for(int i=0; i<_numberOfRow; i++)
+                for (int i = 0; i < _numberOfRow; i++)
                 {
-                    for(int j=0; j<_numberOfColumn; j++)
+                    for (int j = 0; j < _numberOfColumn; j++)
                     {
-                        if((i!=j) && (_components[i,j]!=0.0))
+                        if ((i != j) && (_components[i, j] != 0.0))
                         {
                             return false;
                         }
@@ -1517,13 +1517,13 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private bool IsIdentityMatrix()
             {
-                for(int i=0; i<_numberOfRow; i++)
+                for (int i = 0; i < _numberOfRow; i++)
                 {
                     if (_components[i, i] != 1.0) { return false; }
-                    for(int j=0; j<_numberOfColumn; j++)
+                    for (int j = 0; j < _numberOfColumn; j++)
                     {
                         if (i == j) { continue; }
-                        if(_components[i, j] != 0.0)
+                        if (_components[i, j] != 0.0)
                         {
                             return false;
                         }
@@ -1642,16 +1642,16 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Matrix Minor(int row, int column)
             {
-                if((row < 0) || (row > _numberOfRow - 1) || (column < 0) || (column > _numberOfColumn - 1)) { throw new ArgumentException("These arguments are bigger than numbers of row and column "); }
+                if ((row < 0) || (row > _numberOfRow - 1) || (column < 0) || (column > _numberOfColumn - 1)) { throw new ArgumentException("These arguments are bigger than numbers of row and column "); }
                 double[,] components = new double[_numberOfRow - 1, _numberOfColumn - 1];
                 int di = 0, dj = 0;
 
-                for(int i=0; i<_numberOfRow - 1 ; i++)
+                for (int i = 0; i < _numberOfRow - 1; i++)
                 {
                     if (i == row) { di = 1; }
-                    for(int j=0; j<_numberOfColumn - 1; j++)
+                    for (int j = 0; j < _numberOfColumn - 1; j++)
                     {
-                        if(j == column) { dj = 1; }
+                        if (j == column) { dj = 1; }
                         components[i, j] = _components[i + di, j + dj];
                     }
                     dj = 0;
@@ -1668,12 +1668,12 @@ namespace Mathematics
                 get => _components;
                 set
                 {
-                    if(_components == null) { throw new NullReferenceException(); }
-                    else if(_numberOfRow!=value.GetLength(0) || _numberOfColumn != value.GetLength(1)) { throw new ArgumentException(); }
-                    
-                    for(int i=0; i<_numberOfRow; i++)
+                    if (_components == null) { throw new NullReferenceException(); }
+                    else if (_numberOfRow != value.GetLength(0) || _numberOfColumn != value.GetLength(1)) { throw new ArgumentException(); }
+
+                    for (int i = 0; i < _numberOfRow; i++)
                     {
-                        for(int j=0; j<_numberOfColumn; j++)
+                        for (int j = 0; j < _numberOfColumn; j++)
                         {
                             _components[i, j] = value[i, j];
                         }
@@ -1685,7 +1685,7 @@ namespace Mathematics
             {
                 get
                 {
-                    if(index1<0 || index2<0 || index1>_numberOfRow-1 || index2 > _numberOfColumn - 1) { throw new IndexOutOfRangeException(); }
+                    if (index1 < 0 || index2 < 0 || index1 > _numberOfRow - 1 || index2 > _numberOfColumn - 1) { throw new IndexOutOfRangeException(); }
                     return _components[index1, index2];
                 }
                 set
@@ -1709,13 +1709,15 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Matrix Indentity(int rowCount, int colCount)
             {
+                if (rowCount < 0 || colCount < 0) { throw new ArgumentException("Matrix dimensions do not can to be negative"); }
                 double[,] components = new double[rowCount, colCount];
                 
                 for(int i=0; i<rowCount; i++)
                 {
+                    components[i, i] = 1.0;
                     for(int j=0; j<colCount; j++)
                     {
-                        if (i == j) { components[i, j] = 1.0; }
+                        if (i == j) { continue; }
                         components[i, j] = 0.0;
                     }
                 }
@@ -1726,7 +1728,9 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Matrix Zero(int rowCount, int colCount)
             {
-                throw new NotImplementedException();
+                if(rowCount<0 || colCount < 0) { throw new ArgumentException("Matrix dimensions do not can to be negative"); }
+
+                return new double[rowCount, colCount];
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
