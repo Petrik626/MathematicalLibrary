@@ -1421,6 +1421,118 @@ namespace Mathematics
             public Matrix(Matrix obj) : this(obj._components) { }
             #endregion
             #region METHODS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private bool IsSymmetricMatrix()
+            {
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    for(int j=0; j<_numberOfColumn; j++)
+                    {
+                        if((i != j) && (_components[i, j] != _components[j, i])) 
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private bool IsDiagonalMatrix()
+            {
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    for(int j=0; j<_numberOfColumn; j++)
+                    {
+                        if((i!=j) && (_components[i,j]!=0.0))
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private bool IsThreeDiagonalMatrix()
+            {
+                for (int i = 0; i < _numberOfRow; i++)
+                {
+                    for (int j = 0; j < _numberOfColumn; j++)
+                    {
+                        if (i != j && i != j - 1 && i != j + 1 && _components[i, j] != 0.0) { return false; }
+                    }
+                }
+
+                return true;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private bool IsUpperTriangularMatrix()
+            {
+                for (int i = 0; i < _numberOfRow; i++)
+                {
+                    for (int j = 0; j < i; j++)
+                    {
+                        if (_components[i, j] != 0.0) { return false; }
+                    }
+                }
+
+                return true;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private bool IsLowerTriangularMatrix()
+            {
+                for (int i = 0; i < _numberOfRow; i++)
+                {
+                    for (int j = 0; j < i; j++)
+                    {
+                        if (_components[j, i] != 0.0) { return false; }
+                    }
+                }
+
+                return true;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private bool IsZeroMatrix()
+            {
+                for (int i = 0; i < _numberOfRow; i++)
+                {
+                    for (int j = 0; j < _numberOfColumn; j++)
+                    {
+                        if (_components[i, j] != 0.0)
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private bool IsIdentityMatrix()
+            {
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    if (_components[i, i] != 1.0) { return false; }
+                    for(int j=0; j<_numberOfColumn; j++)
+                    {
+                        if (i == j) { continue; }
+                        if(_components[i, j] != 0.0)
+                        {
+                            return false;
+                        }
+                    }
+                }
+
+                return true;
+            }
+
             public bool Equals(Matrix other)
             {
                 return ReferenceEquals(this, other);
@@ -1585,8 +1697,38 @@ namespace Mathematics
 
             public int AmountOfElements { get => _numberOfRow * _numberOfColumn; }
             public bool IsSquare { get => _numberOfRow == _numberOfColumn; }
+            public bool IsSymmetric { get => IsSymmetricMatrix(); }
+            public bool IsUpperTriangular { get => IsUpperTriangularMatrix(); }
+            public bool IsLowerTriangular { get => IsLowerTriangularMatrix(); }
+            public bool IsZero { get => IsZeroMatrix(); }
+            public bool IsIdentity { get => IsIdentityMatrix(); }
+            public bool IsDiagonal { get => IsDiagonalMatrix(); }
+            public bool IsThreeDiagonal { get => IsThreeDiagonalMatrix(); }
             #endregion
             #region STATIC MEMBERS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Indentity(int rowCount, int colCount)
+            {
+                double[,] components = new double[rowCount, colCount];
+                
+                for(int i=0; i<rowCount; i++)
+                {
+                    for(int j=0; j<colCount; j++)
+                    {
+                        if (i == j) { components[i, j] = 1.0; }
+                        components[i, j] = 0.0;
+                    }
+                }
+
+                return components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Zero(int rowCount, int colCount)
+            {
+                throw new NotImplementedException();
+            }
+
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator*(Matrix a, Vector b)
             {
