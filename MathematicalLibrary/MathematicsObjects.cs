@@ -1595,32 +1595,32 @@ namespace Mathematics
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return Equals(obj);
             }
 
             bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return !Equals(obj);
             }
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1865,6 +1865,28 @@ namespace Mathematics
                     for(int j=0; j<obj._numberOfColumn; j++)
                     {
                         components[i, j] = obj._components[i, j];
+                    }
+                }
+
+                return components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator string (Matrix obj)
+            {
+                return obj.ToString();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Matrix(List<List<double>> obj)
+            {
+                double[,] components = new double[obj[0].Count, obj[1].Count];
+
+                for(int i=0; i<components.GetLength(0); i++)
+                {
+                    for(int j=0; j<components.GetLength(1); j++)
+                    {
+                        components[i, j] = obj[i][j];
                     }
                 }
 
