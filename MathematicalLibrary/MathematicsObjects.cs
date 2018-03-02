@@ -895,7 +895,7 @@ namespace Mathematics
             #endregion
         }
     
-        public enum TypesNorm
+        public enum TypesNormOfVector
         {
             MaximumNorm, LNorm, EuclideanNorm
         }
@@ -976,13 +976,13 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public double Norm(TypesNorm types)
+            public double Norm(TypesNormOfVector types)
             {
                 switch(types)
                 {
-                    case TypesNorm.MaximumNorm: return MaxNorm();
-                    case TypesNorm.LNorm: return LNorm();
-                    case TypesNorm.EuclideanNorm: return Abs;
+                    case TypesNormOfVector.MaximumNorm: return MaxNorm();
+                    case TypesNormOfVector.LNorm: return LNorm();
+                    case TypesNormOfVector.EuclideanNorm: return Abs;
                     default: throw new ArgumentException();
                 }
             }
@@ -1377,6 +1377,11 @@ namespace Mathematics
             #endregion
         }
 
+        public enum TypesNormOfMatrix
+        {
+            MaximumSumOfRows, MaximumSumOfColumns, Maximum, Spherical
+        }
+
         [StructLayout(LayoutKind.Auto), Serializable]
         public class Matrix : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Matrix>
         {
@@ -1421,6 +1426,99 @@ namespace Mathematics
             public Matrix(Matrix obj) : this(obj._components) { }
             #endregion
             #region METHODS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private double MaximumSumOfRowsNorm()
+            {
+                if (!IsSquare) { throw new NotSupportedException("This operation is not been supported for non square matrix"); }
+
+                double[] sumRows = new double[_numberOfRow];
+                double s;
+
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    s = 0.0;
+                    for(int j=0; j<_numberOfColumn; j++)
+                    {
+                        s += Math.Abs(_components[i, j]);
+                    }
+                    sumRows[i] = s;
+                }
+
+                return sumRows.Max();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private double MaximumSumOfColumnsNorm()
+            {
+                if (!IsSquare) { throw new NotSupportedException("This operation is not been supported for non square matrix"); }
+
+                double[] sumColumns = new double[_numberOfColumn];
+                double s;
+
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    s = 0.0;
+                    for(int j=0; j<_numberOfColumn; j++)
+                    {
+                        s += Math.Abs(_components[j, i]);
+                    }
+                    sumColumns[i] = s;
+                }
+
+                return sumColumns.Max();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private double MaximumElementNorm()
+            {
+                if (!IsSquare) { throw new NotSupportedException("This operation is not been supported for non square matrix"); }
+
+                List<List<double>> list = (List<List<double>>)this;
+                double max = list[0].Max(n => Math.Abs(n));
+
+                for(int i=1;i<_numberOfRow;i++)
+                {
+                    if(list[i].Max(n=>Math.Abs(n)) > max)
+                    {
+                        max = list[i].Max(n => Math.Abs(n));
+                    }
+                }
+
+                return _numberOfRow * max;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private double SphericalNorm()
+            {
+                if (!IsSquare) { throw new NotSupportedException("This operation is not been supported for non square matrix"); }
+
+                double spherical = 0.0;
+
+                for(int i=0;i<_numberOfRow;i++)
+                {
+                    for(int j=0; j<_numberOfRow; j++)
+                    {
+                        spherical += Math.Abs(Math.Pow(_components[i, j], 2.0));
+                    }
+                }
+
+                return Math.Sqrt(spherical);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double Norm(TypesNormOfMatrix types)
+            {
+                switch(types)
+                {
+                    case TypesNormOfMatrix.MaximumSumOfRows: return MaximumSumOfRowsNorm();
+                    case TypesNormOfMatrix.MaximumSumOfColumns: return MaximumSumOfColumnsNorm();
+                    case TypesNormOfMatrix.Maximum: return MaximumElementNorm();
+                    case TypesNormOfMatrix.Spherical: return SphericalNorm();
+                    default: throw new ArgumentException();
+                }
+            }
+
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private bool IsSymmetricMatrix()
             {
@@ -1734,6 +1832,12 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static double Norm(Matrix obj, TypesNormOfMatrix types)
+            {
+                return obj.Norm(types);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator*(Matrix a, Vector b)
             {
                 if (a._numberOfColumn != b.Measurement) { throw new ArithmeticException("Size of matrix and vector are not equaling each other"); }
@@ -1891,6 +1995,26 @@ namespace Mathematics
                 }
 
                 return components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator List<List<double>>(Matrix obj)
+            {
+                List<List<double>> list = new List<List<double>>();
+                List<double> rows;
+
+                for(int i=0; i<obj._numberOfRow; i++)
+                {
+                    rows = new List<double>();
+                    for(int j=0; j<obj._numberOfColumn; j++)
+                    {
+                        rows.Add(obj[i, j]);
+                    }
+                    list.Add(rows);
+                    rows = null;
+                }
+
+                return list;
             }
             #endregion
         }
