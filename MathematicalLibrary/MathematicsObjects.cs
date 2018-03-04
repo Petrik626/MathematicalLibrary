@@ -1391,6 +1391,20 @@ namespace Mathematics
             private readonly double[,] _components;
             #endregion
             #region CONSTRUCTORS
+            public Matrix()
+            {
+                _numberOfRow = _numberOfColumn = 2;
+                _components = new double[_numberOfRow, _numberOfColumn];
+
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    for(int j=0; j<_numberOfColumn; j++)
+                    {
+                        _components[i, j] = 0.0;
+                    }
+                }
+            }
+
             public Matrix(int row, int colums)
             {
                 _numberOfRow = row;
@@ -2016,6 +2030,41 @@ namespace Mathematics
 
                 return list;
             }
+            #endregion
+        }
+
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public sealed class Tensor:Matrix
+        {
+            #region FIELD
+            private int _rank;
+            #endregion
+            #region CONSTRUCTORS 
+            public Tensor(int r):base(r,r)
+            {
+                _rank = r;
+            }
+
+            public Tensor(int r, double[,] components):base(r,r,components)
+            {
+                _rank = r;
+            }
+
+            public Tensor(double[,] components):base(components)
+            {
+                _rank = components.GetLength(0);
+            }
+
+            public Tensor(Tensor obj):base(obj.Components)
+            {
+                _rank = obj.CountOfRow;
+            }
+
+            public Tensor():base()
+            {
+                _rank = 2;
+            }
+
             #endregion
         }
     }
