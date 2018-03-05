@@ -2034,37 +2034,17 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public sealed class Tensor:Matrix
+        public sealed class Tensor : Matrix
         {
             #region FIELD
-            private int _rank;
+            private readonly int _rank;
             #endregion
             #region CONSTRUCTORS 
-            public Tensor(int r):base(r,r)
-            {
-                _rank = r;
-            }
-
-            public Tensor(int r, double[,] components):base(r,r,components)
-            {
-                _rank = r;
-            }
-
-            public Tensor(double[,] components):base(components)
-            {
-                _rank = components.GetLength(0);
-            }
-
-            public Tensor(Tensor obj):base(obj.Components)
-            {
-                _rank = obj.CountOfRow;
-            }
-
-            public Tensor():base()
-            {
-                _rank = 2;
-            }
-
+            public Tensor(int r) : base(r, r) => _rank = r;
+            public Tensor(int r, double[,] components) : base(r, r, components) => _rank = r;
+            public Tensor(double[,] components) : base(components) => _rank = components.GetLength(0);
+            public Tensor(Tensor obj) : base(obj.Components) => _rank = obj.CountOfRow;
+            public Tensor() : base() => _rank = 2;
             #endregion
         }
     }
