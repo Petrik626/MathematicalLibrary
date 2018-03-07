@@ -158,6 +158,9 @@ namespace Mathematics
                     return false;
                 }
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Equals(Complex a, Complex b) => a.Equals(b);
             #endregion
             #region OPERATORS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -739,6 +742,9 @@ namespace Mathematics
             {
                 return new Point2D(a._x - 1, a._y - 1);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Equals(Point2D a, Point2D b) => a.Equals(b);
             #endregion
             #region TYPE CONVERSIONS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1276,6 +1282,9 @@ namespace Mathematics
             {
                 return v.Normalization(types);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Equals(Vector a, Vector b) => a.Equals(b);
             #endregion
             #region NESTED TYPE
             private sealed class Enumerator : IEnumerator<double>
@@ -1396,9 +1405,9 @@ namespace Mathematics
                 _numberOfRow = _numberOfColumn = 2;
                 _components = new double[_numberOfRow, _numberOfColumn];
 
-                for(int i=0; i<_numberOfRow; i++)
+                for (int i = 0; i < _numberOfRow; i++)
                 {
-                    for(int j=0; j<_numberOfColumn; j++)
+                    for (int j = 0; j < _numberOfColumn; j++)
                     {
                         _components[i, j] = 0.0;
                     }
@@ -1442,6 +1451,34 @@ namespace Mathematics
             #region METHODS
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void SwapRowsInMatrix(int k, int j)
+            {
+                double[] tempRow = new double[_numberOfRow];
+
+                for (int i = 0; i < _numberOfRow; i++)
+                {
+                    tempRow[i] = _components[k, i];
+                    _components[k, i] = _components[j, i];
+                    _components[j, i] = tempRow[i];
+                }
+
+                tempRow = null;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private int MaxIndexInRow(int k)
+            {
+                List<double> row = new List<double>();
+
+                for (int i = 0; i < _numberOfRow; i++)
+                {
+                    row.Add(_components[k, i]);
+                }
+
+                return row.IndexOf(row.Max(n => Math.Abs(n)));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private double MaximumSumOfRowsNorm()
             {
                 if (!IsSquare) { throw new NotSupportedException("This operation is not been supported for non square matrix"); }
@@ -1449,10 +1486,10 @@ namespace Mathematics
                 double[] sumRows = new double[_numberOfRow];
                 double s;
 
-                for(int i=0; i<_numberOfRow; i++)
+                for (int i = 0; i < _numberOfRow; i++)
                 {
                     s = 0.0;
-                    for(int j=0; j<_numberOfColumn; j++)
+                    for (int j = 0; j < _numberOfColumn; j++)
                     {
                         s += Math.Abs(_components[i, j]);
                     }
@@ -1470,10 +1507,10 @@ namespace Mathematics
                 double[] sumColumns = new double[_numberOfColumn];
                 double s;
 
-                for(int i=0; i<_numberOfRow; i++)
+                for (int i = 0; i < _numberOfRow; i++)
                 {
                     s = 0.0;
-                    for(int j=0; j<_numberOfColumn; j++)
+                    for (int j = 0; j < _numberOfColumn; j++)
                     {
                         s += Math.Abs(_components[j, i]);
                     }
@@ -1491,9 +1528,9 @@ namespace Mathematics
                 List<List<double>> list = (List<List<double>>)this;
                 double max = list[0].Max(n => Math.Abs(n));
 
-                for(int i=1;i<_numberOfRow;i++)
+                for (int i = 1; i < _numberOfRow; i++)
                 {
-                    if(list[i].Max(n=>Math.Abs(n)) > max)
+                    if (list[i].Max(n => Math.Abs(n)) > max)
                     {
                         max = list[i].Max(n => Math.Abs(n));
                     }
@@ -1509,9 +1546,9 @@ namespace Mathematics
 
                 double spherical = 0.0;
 
-                for(int i=0;i<_numberOfRow;i++)
+                for (int i = 0; i < _numberOfRow; i++)
                 {
-                    for(int j=0; j<_numberOfRow; j++)
+                    for (int j = 0; j < _numberOfRow; j++)
                     {
                         spherical += Math.Abs(Math.Pow(_components[i, j], 2.0));
                     }
@@ -1523,7 +1560,7 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public double Norm(TypesNormOfMatrix types)
             {
-                switch(types)
+                switch (types)
                 {
                     case TypesNormOfMatrix.MaximumSumOfRows: return MaximumSumOfRowsNorm();
                     case TypesNormOfMatrix.MaximumSumOfColumns: return MaximumSumOfColumnsNorm();
@@ -1771,6 +1808,99 @@ namespace Mathematics
 
                 return components;
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Matrix Pow(int n)
+            {
+                Matrix temp = new Matrix(this);
+
+                while ((n--) - 1 > 0)
+                {
+                    temp *= this;
+                }
+
+                return temp;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void ConvertInUpperTriangularView()
+            {
+                double temp;
+                int n = -1;
+
+                for (int j = 0; j < _numberOfRow; j++)
+                {
+                    n = MaxIndexInRow(j);
+                    if (n == j) { SwapRowsInMatrix(n, j); }
+                    for (int i = j + 1; i < _numberOfRow; i++)
+                    {
+                        temp = _components[i, j] / _components[j, j];
+                        for (int k = 0; k < _numberOfRow; k++)
+                        {
+                            _components[i, k] -= temp * _components[j, k];
+                        }
+                    }
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double Determinant()
+            {
+                if (!IsSquare) { throw new NotSupportedException("The operation of the determinant can not be used in this object"); }
+                Matrix temp = new Matrix(this);
+
+                double det = 1.0;
+                temp.ConvertInUpperTriangularView();
+
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    det *= temp._components[i, i];
+                }
+
+                return det;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Rank()
+            {
+                Matrix temp = new Matrix(this);
+                temp.ConvertInUpperTriangularView();
+
+                int count = 0;
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    for(int j=0; j<_numberOfColumn; j++)
+                    {
+                        if (temp._components[i, j] == 0.0) { count++; break; }
+                    }
+                }
+
+                return count;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Matrix Reverse()
+            {
+                if (!IsSquare) { throw new NotSupportedException("The operation of the reverse can not be used in this object"); }
+
+                Matrix result = new Matrix(_numberOfRow, _numberOfColumn);
+                Matrix temp;
+                double det = Determinant();
+                double detReverse = ((1.0) / det);
+
+                if (det == 0.0) { return this; }
+
+                for(int i=0; i<_numberOfRow; i++)
+                {
+                    for(int j=0; j<_numberOfColumn;j++)
+                    {
+                        temp = Minor(i, j);
+                        result._components[j, i] = Math.Pow(-1.0, i + j) * detReverse * temp.Determinant();
+                    }
+                }
+
+                return result;
+            }
             #endregion
             #region PROPERTIES
             public int CountOfRow { get => _numberOfRow; }
@@ -1964,6 +2094,24 @@ namespace Mathematics
             {
                 return b * a;
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static double Determinant(Matrix obj) => obj.Determinant();
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Transpose(Matrix obj) => obj.Transpose();
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Reverse(Matrix obj) => obj.Reverse();
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static int Rank(Matrix obj) => obj.Rank();
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Pow(Matrix obj, int n) => obj.Pow(n);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Equals(Matrix a, Matrix b) => a.Equals(b);
             #endregion
             #region TYPE CONVERSIONS
 
