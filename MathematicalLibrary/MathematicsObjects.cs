@@ -2165,6 +2165,9 @@ namespace Mathematics
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Equals(Matrix a, Matrix b) => a.Equals(b);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Multiplication(Matrix a, Matrix b) => a * b;
             #endregion
             #region TYPE CONVERSIONS
 
@@ -2252,6 +2255,118 @@ namespace Mathematics
             public Tensor(double[,] components) : base(components) => _rank = components.GetLength(0);
             public Tensor(Tensor obj) : base(obj.Components) => _rank = obj.CountOfRow;
             public Tensor() : base() => _rank = 2;
+            #endregion
+            #region METHODS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public new Tensor Transpose() => new Tensor(base.Transpose().Components);
+
+            public double Sp()
+            {
+                double s = 0.0;
+                for(int i=0; i<_rank; i++)
+                {
+                    s += Components[i, i];
+                }
+
+                return s;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double FirstInvariant() => Sp();
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double SecondInvariant()
+            {
+                Tensor q = new Tensor(Multiplication(Components, Components).Components);
+                return 0.5 * (Sp() * Sp() - q.Sp());
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double ThirdInvariant() => Determinant();
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Tensor Dev()
+            {
+                Tensor g = IdentityTensor(_rank);
+                return this - g * (1.0 / 3.0) * Sp();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Tensor IsotropicPart() => IdentityTensor(_rank) * (1.0 / 3.0) * Sp();
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Tensor SymmetricalPart() => 0.5 * (this + Transpose());
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Tensor SkewSymmetricalPart() => 0.5 * (this - Transpose());
+            #endregion
+            #region STATIC MEMBERS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor IdentityTensor(int rank)
+            {
+                return new Tensor(Indentity(rank, rank).Components);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor operator*(Tensor t, double a)
+            {
+                double[,] tensor = new double[t._rank, t._rank];
+
+                for(int i=0; i<t._rank; i++)
+                {
+                    for(int j=0; j<t._rank; j++)
+                    {
+                        tensor[i, j] = t[i, j] * a;
+                    }
+                }
+
+                return new Tensor(tensor);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor operator *(double a, Tensor t) => t * a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor operator - (Tensor a, Tensor b)
+            {
+                if (a._rank != b._rank) { throw new ArgumentException("The ranks of the tensors are not being equal"); }
+
+                double[,] tensor = new double[a._rank, a._rank];
+
+                for(int i=0; i<a._rank; i++)
+                {
+                    for(int j=0; j<a._rank; j++)
+                    {
+                        tensor[i, j] = a[i, j] - b[i, j];
+                    }
+                }
+
+                return new Tensor(tensor);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor operator + (Tensor a, Tensor b)
+            {
+                if (a._rank != b._rank) { throw new ArgumentException("The ranks of the tensors are not being equal"); }
+
+                double[,] tensor = new double[a._rank, a._rank];
+
+                for (int i = 0; i < a._rank; i++)
+                {
+                    for (int j = 0; j < a._rank; j++)
+                    {
+                        tensor[i, j] = a[i, j] + b[i, j];
+                    }
+                }
+
+                return new Tensor(tensor);
+            }
+            #endregion
+            #region PROPERTIES
+            public new int Rank { get => _rank; }
+            public new bool IsSquare => true;
             #endregion
         }
     }
