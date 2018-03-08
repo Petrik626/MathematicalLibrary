@@ -1976,6 +1976,62 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Parse(string s)
+            {
+                double[,] components;
+                try
+                {
+                    s = s.Replace(".", ",");
+                    string pattern = @"([+-]?[\d]+([.,]\d+)?)|(?=(?i)[A-Z])";
+                    string[] rows = Regex.Split(s, "\n", RegexOptions.Compiled);
+                    int numberOfColumn = Regex.Matches(rows[0], " ", RegexOptions.Compiled).Count;
+                    int numberOfRow = rows.Count();
+                    components = new double[numberOfRow, numberOfColumn];
+                    int j;
+
+                    for (int i = 0; i < numberOfRow; i++)
+                    {
+                        j = 0;
+                        foreach (Match match in Regex.Matches(rows[i], pattern, RegexOptions.Compiled))
+                        {
+                            components[i, j] = double.Parse(match.Value);
+                            j++;
+                        }
+                    }
+
+                    return new Matrix(components);
+                }
+                catch(FormatException)
+                {
+                    components = new double[2, 2];
+                    for(int i=0; i<2; i++)
+                    {
+                        for(int j=0; j<2; j++)
+                        {
+                            components[i, j] = 0.0;
+                        }
+                    }
+
+                    return new Matrix(components);
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryParse(string s, out Matrix obj)
+            {
+                obj = new Matrix();
+                try
+                {
+                    obj = Parse(s);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static double Norm(Matrix obj, TypesNormOfMatrix types)
             {
                 return obj.Norm(types);
@@ -2135,6 +2191,12 @@ namespace Mathematics
                 }
 
                 return components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Matrix(string s)
+            {
+                return Parse(s);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
