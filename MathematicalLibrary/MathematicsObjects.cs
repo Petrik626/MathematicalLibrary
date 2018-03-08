@@ -126,8 +126,7 @@ namespace Mathematics
                             {
                                 if (i > 1) { break; }
 
-                                complexNumber[i] = el.Value;
-                                i++;
+                                complexNumber[i++] = el.Value;
                             }
 
                             complexNumber[1] = Regex.Replace(complexNumber[1], @"(?i)[i]", string.Empty, RegexOptions.Compiled);
@@ -673,8 +672,7 @@ namespace Mathematics
                             foreach(Match m in Regex.Matches(s,pattern,RegexOptions.Compiled))
                             {
                                 if (i > 1) { break; }
-                                coords[i] = m.Value;
-                                i++;
+                                coords[i++] = m.Value;
                             }
 
                             coords[0] = Regex.Replace(coords[0], ";", string.Empty, RegexOptions.Compiled);
@@ -1994,8 +1992,7 @@ namespace Mathematics
                         j = 0;
                         foreach (Match match in Regex.Matches(rows[i], pattern, RegexOptions.Compiled))
                         {
-                            components[i, j] = double.Parse(match.Value);
-                            j++;
+                            components[i, j++] = double.Parse(match.Value);
                         }
                     }
 
