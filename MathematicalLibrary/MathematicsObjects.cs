@@ -2365,7 +2365,7 @@ namespace Mathematics
             }
             #endregion
             #region PROPERTIES
-            public new int Rank { get => _rank; }
+            public new int Rank { get => _rank - 1; }
             public new bool IsSquare => true;
             #endregion
         }
