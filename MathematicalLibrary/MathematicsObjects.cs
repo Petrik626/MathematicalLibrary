@@ -160,6 +160,54 @@ namespace Mathematics
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Equals(Complex a, Complex b) => a.Equals(b);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Add(Complex a, Complex b) => a + b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Add(Complex a, double b) => a + b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Add(double b, Complex a) => a + b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Subtract(Complex a, Complex b) => a - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Subtract(Complex a, double b) => a - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Subtract(double a, Complex b) => a - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Multiply(Complex a, Complex b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Multiply(Complex a, double b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Multiply(double b, Complex a) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Divide(Complex a, Complex b) => a / b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Divide(Complex a, double b) => a / b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Divide(double b, Complex a) => b / a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Increment(Complex a) => ++a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Decrement(Complex a) => --a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Plus(Complex a) => +a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Complex Negate(Complex a) => -a;
             #endregion
             #region OPERATORS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -743,6 +791,21 @@ namespace Mathematics
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Equals(Point2D a, Point2D b) => a.Equals(b);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Subtract(Point2D a, Point2D b) => a - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point2D Plus(Point2D a) => +a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point2D Negate(Point2D a) => -a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point2D Increment(Point2D a) => ++a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point2D Decrement(Point2D a) => --a;
             #endregion
             #region TYPE CONVERSIONS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1228,6 +1291,28 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator * (Vector a, Tensor b)
+            {
+                if (a._dimensions != b.Rank) { throw new ArithmeticException("Size of Tensor and vector are not equaling each other"); }
+
+                Vector v = new Vector(b.Rank);
+
+                double s;
+                for (int i = 0; i < a._dimensions; i++)
+                {
+                    s = 0.0;
+                    for (int j = 0; j < b.Rank; j++)
+                    {
+                        s = s + a[j] * b[j, i];
+                    }
+
+                    v._components[i] = s;
+                }
+
+                return v;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector operator *(double a, Vector b)
             {
                 return b._components.Select(n => a * n).ToArray<double>();
@@ -1283,6 +1368,42 @@ namespace Mathematics
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Equals(Vector a, Vector b) => a.Equals(b);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Add(Vector a, Vector b) => a + b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Subtract(Vector a, Vector b) => a - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static double Multiply(Vector a, Vector b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Multiply(Vector a, double b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Multiply(double a, Vector b) => b * a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Multiply(Vector a, Matrix b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Multiply(Vector a, Tensor b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Divide(Vector a, double b) => a / b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Plus(Vector a) => +a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Negate(Vector a) => -a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Increment(Vector a) => ++a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Decrement(Vector a) => --a;
             #endregion
             #region NESTED TYPE
             private sealed class Enumerator : IEnumerator<double>
@@ -1737,7 +1858,7 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Matrix) ? (this / (Matrix)obj) : throw new ArgumentException("Only matrix types allowed");
             }
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
@@ -2149,6 +2270,12 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix operator /(Matrix a, Matrix b) => a * (b.Reverse());
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix operator /(Matrix a, double b) => a * (1.0 / b);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static double Determinant(Matrix obj) => obj.Determinant();
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -2167,7 +2294,28 @@ namespace Mathematics
             public static bool Equals(Matrix a, Matrix b) => a.Equals(b);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Matrix Multiplication(Matrix a, Matrix b) => a * b;
+            public static Matrix Add(Matrix a, Matrix b) => a + b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Subtract(Matrix a, Matrix b) => a - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Multiply(Matrix a, Matrix b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Multiply(Matrix a, Vector b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Multiply(Matrix a, double b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Multiply(double a, Matrix b) => b * a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Divide(Matrix a, Matrix b) => a / b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Matrix Divide(Matrix a, double b) => a / b;
             #endregion
             #region TYPE CONVERSIONS
 
@@ -2278,7 +2426,7 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public double SecondInvariant()
             {
-                Tensor q = new Tensor(Multiplication(Components, Components).Components);
+                Tensor q = this * this;
                 return 0.5 * (Sp() * Sp() - q.Sp());
             }
 
@@ -2300,6 +2448,8 @@ namespace Mathematics
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Tensor SkewSymmetricalPart() => 0.5 * (this - Transpose());
+
+            public new void ConvertInUpperTriangularView() => throw new NotSupportedException("This operation has not been supported this type");
             #endregion
             #region STATIC MEMBERS
 
@@ -2307,6 +2457,50 @@ namespace Mathematics
             public static Tensor IdentityTensor(int rank)
             {
                 return new Tensor(Indentity(rank, rank).Components);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator * (Tensor a, Vector b)
+            {
+                if (a._rank != b.Measurement) { throw new ArithmeticException("Size of Tensor and vector are not equaling each other"); }
+                double[] components = new double[a._rank];
+
+                double s;
+                for (int i = 0; i < a._rank; i++)
+                {
+                    s = 0.0;
+                    for (int j = 0; j < b.Measurement; j++)
+                    {
+                        s = s + a[i, j] * b[j];
+                    }
+                    components[i] = s;
+                }
+
+                return components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor operator * (Tensor a, Tensor b)
+            {
+                if (a._rank != b._rank) { throw new ArgumentException("The ranks of the tensors are not being equal"); }
+
+                double[,] components = new double[a._rank, b._rank];
+                double s;
+
+                for (int i = 0; i < a._rank; i++)
+                {
+                    for (int j = 0; j < b._rank; j++)
+                    {
+                        s = 0.0;
+                        for (int k = 0; k < a._rank; k++)
+                        {
+                            s += a[i, k] * b[k, j];
+                        }
+                        components[i, j] = s;
+                    }
+                }
+
+                return new Tensor(components);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -2327,6 +2521,9 @@ namespace Mathematics
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Tensor operator *(double a, Tensor t) => t * a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor operator /(Tensor a, double b) => a * (1.0 / b);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Tensor operator - (Tensor a, Tensor b)
@@ -2363,6 +2560,30 @@ namespace Mathematics
 
                 return new Tensor(tensor);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Equals(Tensor a, Tensor b) => a.Equals(b);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor Add(Tensor a, Tensor b) => a + b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor Subtract(Tensor a, Tensor b) => a - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor Multiply(Tensor a, Tensor b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Multiply(Tensor a, Vector b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor Multiply(Tensor a, double b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor Multiply(double a, Tensor b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Tensor Divide(Tensor a, double b) => a / b;
             #endregion
             #region PROPERTIES
             public new int Rank { get => _rank - 1; }
