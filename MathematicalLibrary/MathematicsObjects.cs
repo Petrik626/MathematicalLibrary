@@ -3039,13 +3039,38 @@ namespace Mathematics
 
             public Quaternion(Vector v, double anglePart)
             {
-                if (v.Measurement != 3) { throw new ArgumentException("The dimension of a vector is more than the exponent of space"); }
+               try
+                {
+                    _x = v[0];
+                    _y = v[1];
+                    _z = v[2];
+                    _w = anglePart;
+                }
+                catch
+                {
+                    _x = 0;
+                    _y = 0;
+                    _z = 0;
+                    _w = anglePart;
+                }
+            }
 
-                _x = v[0];
-                _y = v[1];
-                _z = v[2];
-                _w = anglePart;
-
+            public Quaternion(double[] components)
+            {
+                try
+                {
+                    _x = components[0];
+                    _y = components[1];
+                    _z = components[2];
+                    _w = components[3];
+                }
+                catch
+                {
+                    _x = 0.0;
+                    _y = 0.0;
+                    _z = 0.0;
+                    _w = 0.0;
+                }
             }
             #endregion
             #region METHODS
@@ -3143,6 +3168,72 @@ namespace Mathematics
             #region STATIC MEMBERS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion ConjugateQuaternionNumber(Quaternion obj) => new Quaternion(obj._x, -obj._y, -obj._z, -obj._w);
+
+            public static Quaternion Zero { get => new Quaternion(); }
+
+            public static Quaternion NaN { get => new Quaternion(double.NaN, double.NaN, double.NaN); }
+
+            public static Quaternion Infinity { get => new Quaternion(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity); }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Parse(string s)
+            {
+                switch(s)
+                {
+                    case "0": return Zero;
+                    case "∞": return Infinity;
+                    case "¿": return NaN;
+                    default:
+                        {
+                            s = s.Replace(" ", string.Empty).Replace(".", ",");
+                            string pattern = @"((([+-]?[\d]+([.,][\d]+)?))|([+-](?i)[ijk]?[\d]+([.,]\d+)?(?i)[ijk]?)?([+-](?i)[ijk])?)";
+                            string patter2 = @"(?i)[ijk]";
+
+                            if(!Regex.IsMatch(s,patter2,RegexOptions.Compiled))
+                            {
+                                return new Quaternion(double.Parse(s));
+                            }
+
+                            MatchCollection collection = Regex.Matches(s, pattern, RegexOptions.Compiled);
+                            string[] stringQuaternion = new string[collection.Count];
+                            int i = 0;
+
+                            foreach(Match m in collection)
+                            {
+                                stringQuaternion[i++] = m.Value;
+                            }
+
+                            stringQuaternion = stringQuaternion.Select(str => Regex.Replace(str, patter2, string.Empty, RegexOptions.Compiled)).ToArray<string>();
+
+                            for(i=1;i<stringQuaternion.Length;i++)
+                            {
+                                if (Regex.IsMatch(stringQuaternion[i], @"\B([+-])\B"))
+                                {
+                                    stringQuaternion[i] = stringQuaternion[i] + "1,0";
+                                }
+                            }
+
+                            var doubleQuaternion = stringQuaternion.Where(str => !string.IsNullOrEmpty(str)).Select(str => double.Parse(str)).ToArray();
+
+                            return new Quaternion(doubleQuaternion);
+                        }
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryParse(string s, out Quaternion q)
+            {
+                try
+                {
+                    q = Parse(s);
+                    return true;
+                }
+                catch
+                {
+                    q = new Quaternion();
+                    return false;
+                }
+            }
             #endregion
             #region PROPERTIES
             public double X { get => _x; }
@@ -3151,6 +3242,20 @@ namespace Mathematics
             public double W { get => _w; }
             public Quaternion Conjugate { get => new Quaternion(_x, -_y, -_z, -_w); }
             public double Abs { get => Math.Sqrt(_x * _x + _y * _y + _z * _z + _w * _w); }
+            #endregion
+            #region TYPE CONVERSIONS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Quaternion(string s)
+            {
+                return Parse(s);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator string(Quaternion t)
+            {
+                return t.ToString();
+            }
             #endregion
         }
     }
