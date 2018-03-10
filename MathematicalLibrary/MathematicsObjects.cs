@@ -2710,22 +2710,22 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Point3D) ? (this - (Point3D)obj) : throw new ArgumentException("Only Point3D type alowed");
             }
 
             IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
@@ -2798,11 +2798,58 @@ namespace Mathematics
             #endregion
             #region STATIC MEMBERS
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsInfinity(Point3D p) => double.IsInfinity(p._x) || double.IsInfinity(p._y) || double.IsInfinity(p._z);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsXPossitiveInfinity(Point3D p) => double.IsPositiveInfinity(p._x) && p._y == 0.0 && p._z == 0.0;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsYPossitiveInfinity(Point3D p) => double.IsPositiveInfinity(p._y) && p._x == 0.0 && p._z == 0.0;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsZPossitiveInfinity(Point3D p) => double.IsPositiveInfinity(p._z) && p._x == 0.0 && p._y == 0.0;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsXNegativeInfinity(Point3D p) => double.IsNegativeInfinity(p._x) && p._y == 0.0 && p._z == 0.0;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsYNegativeInfinity(Point3D p) => double.IsNegativeInfinity(p._y) && p._x == 0.0 && p._z == 0.0;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsZNegativeInfinity(Point3D p) => double.IsNegativeInfinity(p._z) && p._x == 0.0 && p._y == 0.0;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsNaN(Point3D p) => double.IsNaN(p._x) || double.IsNaN(p._y) || double.IsNaN(p._z);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool IsZero(Point3D p) => p._x == 0.0 && p._y == 0.0 && p._z == 0.0;
+
+            public static Point3D XPossitiveInfinity { get => new Point3D(double.PositiveInfinity); }
+
+            public static Point3D YPossitiveInfinity { get => new Point3D(0.0, double.PositiveInfinity); }
+
+            public static Point3D ZPossitiveInfinity { get => new Point3D(0.0, 0.0, double.PositiveInfinity); }
+
+            public static Point3D XNegativeInfinity { get => new Point3D(double.NegativeInfinity); }
+
+            public static Point3D YNegativeInfinity { get => new Point3D(0.0, double.NegativeInfinity); }
+
+            public static Point3D ZNegativeInfinity { get => new Point3D(0.0, 0.0, double.NegativeInfinity); }
+
             public static Point3D Zero { get => new Point3D(); }
 
             public static Point3D Infinity { get => new Point3D(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity); }
 
             public static Point3D NaN { get => new Point3D(double.NaN, double.NaN, double.NaN); }
+
+            public static Point3D Epsilon { get => new Point3D(double.Epsilon, double.Epsilon, double.Epsilon); }
+
+            public static Point3D XEpsilon { get => new Point3D(double.Epsilon); }
+
+            public static Point3D YEpsilon { get => new Point3D(0.0, double.Epsilon); }
+
+            public static Point3D ZEpsilon { get => new Point3D(0.0, 0.0, double.Epsilon); }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Point3D Parse(string s)
@@ -2969,6 +3016,141 @@ namespace Mathematics
             {
                 return p.ToString();
             }
+            #endregion
+        }
+        
+        [StructLayout(LayoutKind.Auto),Serializable]
+        public sealed class Quaternion:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Quaternion>,IEnumerable<double>
+        {
+            #region FIELDS
+            private readonly double _x;
+            private readonly double _y;
+            private readonly double _z;
+            private readonly double _w;
+            #endregion
+            #region CONSTRUCTORS
+            public Quaternion(double x=0.0, double y=0.0, double z=0.0, double w=0.0)
+            {
+                _x = x;
+                _y = y;
+                _z = z;
+                _w = w;
+            }
+
+            public Quaternion(Vector v, double anglePart)
+            {
+                if (v.Measurement != 3) { throw new ArgumentException("The dimension of a vector is more than the exponent of space"); }
+
+                _x = v[0];
+                _y = v[1];
+                _z = v[2];
+                _w = anglePart;
+
+            }
+            #endregion
+            #region METHODS
+            public string Show()
+            {
+                return ToString();
+            }
+
+            IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
+            {
+                return Equals(obj);
+            }
+
+            bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
+            {
+                return !Equals(obj);
+            }
+
+            bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            public bool Equals(Quaternion other)
+            {
+                return _x == other._x && _y == other._y && _z == other._z && _w == other._w;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is Quaternion) ? Equals((Quaternion)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                return _x.GetHashCode() ^ _y.GetHashCode() ^ _z.GetHashCode() ^ _w.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                return $"[X={_x};\tY={_y};\tZ={_z};\tW={_w}]";
+            }
+
+            public IEnumerator<double> GetEnumerator()
+            {
+                yield return _x;
+                yield return _y;
+                yield return _z;
+                yield return _w;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double Norm() => Abs * Abs;
+            #endregion
+            #region STATIC MEMBERS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion ConjugateQuaternionNumber(Quaternion obj) => new Quaternion(obj._x, -obj._y, -obj._z, -obj._w);
+            #endregion
+            #region PROPERTIES
+            public double X { get => _x; }
+            public double Y { get => _y; }
+            public double Z { get => _z; }
+            public double W { get => _w; }
+            public Quaternion Conjugate { get => new Quaternion(_x, -_y, -_z, -_w); }
+            public double Abs { get => Math.Sqrt(_x * _x + _y * _y + _z * _z + _w * _w); }
             #endregion
         }
     }
