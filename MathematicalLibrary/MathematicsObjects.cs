@@ -2450,6 +2450,10 @@ namespace Mathematics
             public Tensor SkewSymmetricalPart() => 0.5 * (this - Transpose());
 
             public new void ConvertInUpperTriangularView() => throw new NotSupportedException("This operation has not been supported this type");
+
+            public new Tensor Minor(int row, int column) => throw new NotSupportedException("This operation has not been supported this type");
+
+            public new double Norm(TypesNormOfMatrix types) => throw new NotSupportedException("This operation has not been supported this type");
             #endregion
             #region STATIC MEMBERS
 
@@ -2457,6 +2461,24 @@ namespace Mathematics
             public static Tensor IdentityTensor(int rank)
             {
                 return new Tensor(Indentity(rank, rank).Components);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public new static Tensor Parse(string s) => Matrix.Parse(s).Components;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryParse(string s, out Tensor t)
+            {
+                try
+                {
+                    t = Parse(s);
+                    return true;
+                }
+                catch
+                {
+                    t = new Tensor();
+                    return false;
+                }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -2588,6 +2610,365 @@ namespace Mathematics
             #region PROPERTIES
             public new int Rank { get => _rank - 1; }
             public new bool IsSquare => true;
+            #endregion
+            #region TYPE CONVERSIONS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Tensor(double[,] components)
+            {
+                return new Tensor(components);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator double[,](Tensor t)
+            {
+                return t.Components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Tensor(List<List<double>> obj)
+            {
+                if (obj[0].Count != obj[1].Count) { throw new ArgumentException("The tensor can not be non-square"); }
+
+                double[,] components = new double[obj[0].Count, obj[1].Count];
+
+                for (int i = 0; i < components.GetLength(0); i++)
+                {
+                    for (int j = 0; j < components.GetLength(1); j++)
+                    {
+                        components[i, j] = obj[i][j];
+                    }
+                }
+
+                return new Tensor(components);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator List<List<double>>(Tensor t)
+            {
+                List<List<double>> list = new List<List<double>>();
+                List<double> rows;
+
+                for (int i = 0; i < t._rank; i++)
+                {
+                    rows = new List<double>();
+                    for (int j = 0; j < t._rank; j++)
+                    {
+                        rows.Add(t[i, j]);
+                    }
+                    list.Add(rows);
+                    rows = null;
+                }
+
+                return list;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Tensor(string s)
+            {
+                return Parse(s);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator string(Tensor t)
+            {
+                return t.ToString();
+            }
+            #endregion
+        }
+
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public sealed class Point3D:IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point3D>, IEnumerable<double>
+        {
+            #region FIELDS
+            private readonly double _x;
+            private readonly double _y;
+            private readonly double _z;
+            #endregion
+            #region CONSTRUCTORS
+
+            public Point3D(double x=0.0, double y=0.0, double z=0.0)
+            {
+                _x = x;
+                _y = y;
+                _z = z;
+            }
+
+            public Point3D(Point3D obj)
+            {
+                _x = obj._x;
+                _y = obj._y;
+                _z = obj._z;
+            }
+            #endregion
+            #region METHODS
+
+            string IMathematicalObject.Show()
+            {
+                return ToString();
+            }
+
+            IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
+            {
+                return Equals(obj);
+            }
+
+            bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
+            {
+                return !Equals(obj);
+            }
+
+            bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            public bool Equals(Point3D other)
+            {
+                return ((_x == other._x) && (_y == other._y) && (_z == other._z));
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is Point3D) ? Equals((Point3D)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                return _x.GetHashCode() ^ _y.GetHashCode() ^ _z.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                return $"[X={_x};\tY={_y};\tZ={_z}]";
+            }
+
+            public IEnumerator<double> GetEnumerator()
+            {
+                yield return _x;
+                yield return _y;
+                yield return _z;
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Point3D Offset(double dx, double dy, double dz)
+            {
+                return new Point3D(_x + dx, _y + dy, _z + dz);
+            }
+            #endregion
+            #region STATIC MEMBERS
+
+            public static Point3D Zero { get => new Point3D(); }
+
+            public static Point3D Infinity { get => new Point3D(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity); }
+
+            public static Point3D NaN { get => new Point3D(double.NaN, double.NaN, double.NaN); }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point3D Parse(string s)
+            {
+                s = s.Replace(" ", string.Empty).Replace(".", ",");
+
+                switch (s)
+                {
+                    case "": return NaN;
+                    case "{0}": return Zero;
+                    case "{∞}": return Infinity;
+                    case "{¿}": return NaN;
+                    default:
+                        {
+                            string pattern = @"(([+-]?[\d]+([.,][\d]+)?);|([+-]?[\d]+([.,][\d]+)?))";
+                            string[] coords = new string[3];
+                            int i = 0;
+
+                            foreach (Match m in Regex.Matches(s, pattern, RegexOptions.Compiled))
+                            {
+                                if (i > 2) { break; }
+                                coords[i++] = m.Value;
+                            }
+
+                            coords[0] = Regex.Replace(coords[0], ";", string.Empty, RegexOptions.Compiled);
+                            coords[1] = Regex.Replace(coords[1], ";", string.Empty, RegexOptions.Compiled);
+
+                            if(!string.IsNullOrEmpty(coords[0]) && string.IsNullOrEmpty(coords[1]) && string.IsNullOrEmpty(coords[2]))
+                            {
+                                return new Point3D(double.Parse(coords[0]), 0.0, 0.0);
+                            }
+                            else if(string.IsNullOrEmpty(coords[0]) && !string.IsNullOrEmpty(coords[1]) && string.IsNullOrEmpty(coords[2]))
+                            {
+                                return new Point3D(0.0, double.Parse(coords[1]), 0.0);
+                            }
+                            else if(string.IsNullOrEmpty(coords[0]) && string.IsNullOrEmpty(coords[1]) &&! string.IsNullOrEmpty(coords[2]))
+                            {
+                                return new Point3D(0.0, 0.0, double.Parse(coords[2]));
+                            }
+                            else if(!string.IsNullOrEmpty(coords[0]) && !string.IsNullOrEmpty(coords[1]) && string.IsNullOrEmpty(coords[2]))
+                            {
+                                return new Point3D(double.Parse(coords[0]), double.Parse(coords[1]), 0.0);
+                            }
+                            else if(!string.IsNullOrEmpty(coords[0]) && string.IsNullOrEmpty(coords[1]) && !string.IsNullOrEmpty(coords[2]))
+                            {
+                                return new Point3D(double.Parse(coords[0]), 0.0, double.Parse(coords[2]));
+                            }
+                            else if(string.IsNullOrEmpty(coords[0]) && !string.IsNullOrEmpty(coords[1]) && !string.IsNullOrEmpty(coords[2]))
+                            {
+                                return new Point3D(0.0, double.Parse(coords[1]), double.Parse(coords[2]));
+                            }
+
+                            return coords.Select(n => double.Parse(n)).ToArray<double>();
+                        }
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool TryParse(string s, out Point3D p)
+            {
+                try
+                {
+                    p = Parse(s);
+                    return true;
+                }
+                catch
+                {
+                    p = new Point3D();
+                    return false;
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector operator - (Point3D a, Point3D b)
+            {
+                return new Vector(b._x - a._x, b._y - a._y, b._z - a._z);
+            }        
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point3D operator++(Point3D a)
+            {
+                return new Point3D(a._x + 1.0, a._y + 1.0, a._z + 1.0);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point3D operator--(Point3D a)
+            {
+                return new Point3D(a._x - 1.0, a._y - 1.0, a._z - 1.0);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point3D operator+(Point3D a)
+            {
+                return new Point3D(+a._x, +a._y, +a._z);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point3D operator-(Point3D a)
+            {
+                return new Point3D(-a._x, -a._y, -a._z);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator==(Point3D a, Point3D b)
+            {
+                return a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator!=(Point3D a, Point3D b)
+            {
+                return !a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector Subtract(Point3D a, Point3D b) => a - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point3D Increment(Point3D a) => ++a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point3D Decrement(Point3D a) => --a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point3D Plus(Point3D a) => +a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Point3D Negate(Point3D a) => -a;
+            #endregion
+            #region PROPERTIES
+            public double X { get => _x; }
+            public double Y { get => _y; }
+            public double Z { get => _z; }
+            #endregion
+            #region TYPE CONVERSIONS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Point3D(double[] coords)
+            {
+                try
+                {
+                    return new Point3D(coords[0], coords[1], coords[2]);
+                }
+                catch
+                {
+                    return new Point3D();
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator double[](Point3D p)
+            {
+                return new double[3] { p._x, p._y, p._z };
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Point3D(string s)
+            {
+                return Parse(s);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator string(Point3D p)
+            {
+                return p.ToString();
+            }
             #endregion
         }
     }
