@@ -1998,7 +1998,7 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Matrix Reverse()
+            public Matrix Inverse()
             {
                 if (!IsSquare) { throw new NotSupportedException("The operation of the reverse can not be used in this object"); }
 
@@ -2270,7 +2270,7 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Matrix operator /(Matrix a, Matrix b) => a * (b.Reverse());
+            public static Matrix operator /(Matrix a, Matrix b) => a * (b.Inverse());
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Matrix operator /(Matrix a, double b) => a * (1.0 / b);
@@ -2282,7 +2282,7 @@ namespace Mathematics
             public static Matrix Transpose(Matrix obj) => obj.Transpose();
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Matrix Reverse(Matrix obj) => obj.Reverse();
+            public static Matrix Reverse(Matrix obj) => obj.Inverse();
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static int Rank(Matrix obj) => obj.Rank();
@@ -3077,6 +3077,14 @@ namespace Mathematics
                     _w = 0.0;
                 }
             }
+
+            public Quaternion(Complex z1, Complex z2)
+            {
+                _x = z1.Re;
+                _y = z1.Im;
+                _x = z2.Re;
+                _w = z2.Im;
+            }
             #endregion
             #region METHODS
             public string Show()
@@ -3086,17 +3094,17 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Quaternion) ? (this + (Quaternion)obj) : throw new ArgumentException("Only quaternion type alowed");
             }
 
             IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Quaternion) ? (this - (Quaternion)obj) : throw new ArgumentException("Only quaternion type alowed");
             }
 
             IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Quaternion) ? (this * (Quaternion)obj) : throw new ArgumentException("Only quaternion type alowed");
             }
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
@@ -3182,8 +3190,21 @@ namespace Mathematics
                     default: throw new ArgumentException();
                 }
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Quaternion Inverse() => Conjugate / (Abs * Abs);
+
+            public Tuple<Complex, Complex> ConvertToComplexNumbers()
+            {
+                Complex z1, z2;
+                ConvertToComplexNumbers(this, out z1, out z2);
+                return new Tuple<Complex, Complex>(z1, z2);
+            }
             #endregion
             #region STATIC MEMBERS
+
+            public static Quaternion Identity { get => new Quaternion(0, 0, 0, 1.0); }
+
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion ConjugateQuaternionNumber(Quaternion obj) => new Quaternion(obj._x, -obj._y, -obj._z, -obj._w);
 
@@ -3260,18 +3281,56 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void ConvertToComplexNumbers(Quaternion q, out Complex z1, out Complex z2)
+            {
+                z1 = new Complex(q._x, q._y);
+                z2 = new Complex(q._z, q._w);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion operator+(Quaternion a, Quaternion b)=> new Quaternion(a.Vector3D + b.Vector3D, a.W + b.W);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator -(Quaternion a, Quaternion b) => new Quaternion(a._x - b._x, a._y - b._y, a._z - b._z, a._w - b._w);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion operator*(Quaternion a, Quaternion b) => new Quaternion(a.W * b.Vector3D + b.W * a.Vector3D + Vector.Cross(a.Vector3D, b.Vector3D), a.W * b.W - a.Vector3D * b.Vector3D);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator *(Quaternion a, double d) => new Quaternion(a._x * d, a._y * d, a._z * d, a._w * d);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator *(double d, Quaternion a) => a * d;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator /(Quaternion a, double d) => a * (1.0 / d);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator ==(Quaternion a, Quaternion b) => a.Equals(b);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator !=(Quaternion a, Quaternion b) => !a.Equals(b);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion Add(Quaternion a, Quaternion b) => a + b;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Subtract(Quaternion a, Quaternion b) => a - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion Multiply(Quaternion a, Quaternion b) => a * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Multiply(Quaternion a, double d) => a * d;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Multiply(double d, Quaternion a) => a * d;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Equals(Quaternion a, Quaternion b) => a.Equals(b);
             #endregion
             #region PROPERTIES
+            public bool IsIdentity { get => _x == 0.0 && _y == 0.0 && _z == 0.0 && _w == 1.0; }
             public double X { get => _x; }
             public double Y { get => _y; }
             public double Z { get => _z; }
@@ -3323,6 +3382,18 @@ namespace Mathematics
             public static explicit operator string(Quaternion t)
             {
                 return t.ToString();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Quaternion(Tuple<double,double,double,double> tuple)
+            {
+                return new Quaternion(tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator Tuple<double,double,double,double>(Quaternion t)
+            {
+                return new Tuple<double, double, double, double>(t._x, t._y, t._z, t._w);
             }
             #endregion
         }
