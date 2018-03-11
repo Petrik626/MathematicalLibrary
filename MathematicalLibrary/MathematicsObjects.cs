@@ -3019,6 +3019,11 @@ namespace Mathematics
             #endregion
         }
         
+        public enum TypesNormOfQuaternion
+        {
+            EuclideanNorm, SquareOfEuclideanNorm
+        }
+
         [StructLayout(LayoutKind.Auto),Serializable]
         public sealed class Quaternion:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Quaternion>,IEnumerable<double>
         {
@@ -3146,7 +3151,12 @@ namespace Mathematics
 
             public override string ToString()
             {
-                return $"[X={_x};\tY={_y};\tZ={_z};\tW={_w}]";
+                StringBuilder stringBuilder = new StringBuilder();
+                stringBuilder.Append($"X:{_x} ");
+                stringBuilder.Append($"Y:{_y} ");
+                stringBuilder.Append($"Z:{_z} ");
+                stringBuilder.Append($"W:{_w}");
+                return stringBuilder.ToString();
             }
 
             public IEnumerator<double> GetEnumerator()
@@ -3163,7 +3173,15 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public double Norm() => Abs * Abs;
+            public double Norm(TypesNormOfQuaternion types)
+            {
+                switch(types)
+                {
+                    case TypesNormOfQuaternion.EuclideanNorm: return Abs;
+                    case TypesNormOfQuaternion.SquareOfEuclideanNorm: return Abs * Abs;
+                    default: throw new ArgumentException();
+                }
+            }
             #endregion
             #region STATIC MEMBERS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3186,36 +3204,42 @@ namespace Mathematics
                     default:
                         {
                             s = s.Replace(" ", string.Empty).Replace(".", ",");
-                            string pattern = @"((([+-]?[\d]+([.,][\d]+)?))|([+-](?i)[ijk]?[\d]+([.,]\d+)?(?i)[ijk]?)?([+-](?i)[ijk])?)";
-                            string patter2 = @"(?i)[ijk]";
+                            string pattern = @"[+-]?(?i)[ijk]?[\d]+([.,]\d+)?(?i)[ijk]?";
+                            string pattern2 = @"(?i)[ijk]";
 
-                            if(!Regex.IsMatch(s,patter2,RegexOptions.Compiled))
+                            Dictionary<string, double> quaternionKeysValues = new Dictionary<string, double>()
                             {
-                                return new Quaternion(double.Parse(s));
-                            }
+                                [string.Empty] = 0.0,
+                                ["i"] = 0.0,
+                                ["j"] = 0.0,
+                                ["k"] = 0.0
+                            };
 
                             MatchCollection collection = Regex.Matches(s, pattern, RegexOptions.Compiled);
-                            string[] stringQuaternion = new string[collection.Count];
-                            int i = 0;
 
-                            foreach(Match m in collection)
+                            foreach(Match match in collection)
                             {
-                                stringQuaternion[i++] = m.Value;
-                            }
-
-                            stringQuaternion = stringQuaternion.Select(str => Regex.Replace(str, patter2, string.Empty, RegexOptions.Compiled)).ToArray<string>();
-
-                            for(i=1;i<stringQuaternion.Length;i++)
-                            {
-                                if (Regex.IsMatch(stringQuaternion[i], @"\B([+-])\B"))
+                                if (!(match.Value.Contains("i") || match.Value.Contains("j") || match.Value.Contains("k")))
                                 {
-                                    stringQuaternion[i] = stringQuaternion[i] + "1,0";
+                                    quaternionKeysValues[string.Empty] = double.Parse(match.Value);
+                                }
+                                else if (match.Value.Contains("i"))
+                                {
+                                    quaternionKeysValues["i"] = double.Parse(Regex.Replace(match.Value, pattern2, string.Empty, RegexOptions.Compiled));
+                                }
+                                else if (match.Value.Contains("j"))
+                                {
+                                    quaternionKeysValues["j"] = double.Parse(Regex.Replace(match.Value, pattern2, string.Empty, RegexOptions.Compiled));
+                                }
+                                else if (match.Value.Contains("k"))
+                                {
+                                    quaternionKeysValues["k"] = double.Parse(Regex.Replace(match.Value, pattern2, string.Empty, RegexOptions.Compiled));
                                 }
                             }
 
-                            var doubleQuaternion = stringQuaternion.Where(str => !string.IsNullOrEmpty(str)).Select(str => double.Parse(str)).ToArray();
+                            var quaternionValues = quaternionKeysValues.Values.ToArray();
 
-                            return new Quaternion(doubleQuaternion);
+                            return new Quaternion(quaternionValues);
                         }
                 }
             }
@@ -3234,6 +3258,18 @@ namespace Mathematics
                     return false;
                 }
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator+(Quaternion a, Quaternion b)=> new Quaternion(a.Vector3D + b.Vector3D, a.W + b.W);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator*(Quaternion a, Quaternion b) => new Quaternion(a.W * b.Vector3D + b.W * a.Vector3D + Vector.Cross(a.Vector3D, b.Vector3D), a.W * b.W - a.Vector3D * b.Vector3D);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Add(Quaternion a, Quaternion b) => a + b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Multiply(Quaternion a, Quaternion b) => a * b;
             #endregion
             #region PROPERTIES
             public double X { get => _x; }
@@ -3242,8 +3278,40 @@ namespace Mathematics
             public double W { get => _w; }
             public Quaternion Conjugate { get => new Quaternion(_x, -_y, -_z, -_w); }
             public double Abs { get => Math.Sqrt(_x * _x + _y * _y + _z * _z + _w * _w); }
+            public Vector Vector3D { get => new Vector(_x, _y, _z); }
+            public double Scalar { get => _w; }
             #endregion
             #region TYPE CONVERSIONS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Matrix(Quaternion t)
+            {
+                Matrix quaternionMatrix = new Matrix(4, 4)
+                {
+                    Components = new double[4, 4]
+                    {
+                        { t._x,-t._y,-t._z,-t._w},
+                        { t._y,t._x,-t._w,t._z},
+                        { t._z,t._w,t._x,-t._y},
+                        { t._w,-t._z,t._y,t._x}
+                    }
+                };
+
+                return quaternionMatrix;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator Quaternion(Matrix matrix)
+            {
+                try
+                {
+                    return new Quaternion(matrix[0, 0], -matrix[0, 1], -matrix[0, 2], -matrix[0, 3]);
+                }
+                catch
+                {
+                    return new Quaternion();
+                }
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static implicit operator Quaternion(string s)
