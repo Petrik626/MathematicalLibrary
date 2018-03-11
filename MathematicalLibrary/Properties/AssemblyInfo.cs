@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // Общие сведения об этой сборке предоставляются следующим набором
 // набора атрибутов. Измените значения этих атрибутов, чтобы изменить сведения,
 // связанные со сборкой.
-[assembly: AssemblyTitle("MathematicalLibrary")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Mathematical Library")]
+[assembly: AssemblyDescription("This assembly is a mathematical library. This library solves some mathematics tasks. It uses numerical methods.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Open source software")]
 [assembly: AssemblyProduct("MathematicalLibrary")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyCopyright("Petrov Ilya ©  2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
