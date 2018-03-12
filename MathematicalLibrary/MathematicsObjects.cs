@@ -1055,7 +1055,7 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Vector Normalization(TypesVectorNormalization types)
+            public Vector Normalize(TypesVectorNormalization types)
             {
                 double diveder = 1.0;
                 switch (types)
@@ -1363,7 +1363,7 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector Normalization(Vector v, TypesVectorNormalization types)
             {
-                return v.Normalization(types);
+                return v.Normalize(types);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3021,7 +3021,12 @@ namespace Mathematics
         
         public enum TypesNormOfQuaternion
         {
-            EuclideanNorm, SquareOfEuclideanNorm
+            EuclideanNorm, EuclideanSquaredNorm
+        }
+
+        public enum TypesQuaternionNormalization
+        {
+            EuclideanNormalization, EuclideanSquaredNormalization
         }
 
         [StructLayout(LayoutKind.Auto),Serializable]
@@ -3186,7 +3191,18 @@ namespace Mathematics
                 switch(types)
                 {
                     case TypesNormOfQuaternion.EuclideanNorm: return Abs;
-                    case TypesNormOfQuaternion.SquareOfEuclideanNorm: return Abs * Abs;
+                    case TypesNormOfQuaternion.EuclideanSquaredNorm: return Abs * Abs;
+                    default: throw new ArgumentException();
+                }
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Quaternion Normalize(TypesQuaternionNormalization types)
+            {
+                switch(types)
+                {
+                    case TypesQuaternionNormalization.EuclideanNormalization: return this / Norm(TypesNormOfQuaternion.EuclideanNorm);
+                    case TypesQuaternionNormalization.EuclideanSquaredNormalization: return this / Norm(TypesNormOfQuaternion.EuclideanSquaredNorm);
                     default: throw new ArgumentException();
                 }
             }
@@ -3194,12 +3210,16 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Quaternion Inverse() => Conjugate / (Abs * Abs);
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Tuple<Complex, Complex> ConvertToComplexNumbers()
             {
                 Complex z1, z2;
                 ConvertToComplexNumbers(this, out z1, out z2);
                 return new Tuple<Complex, Complex>(z1, z2);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double ScalarProduct(Quaternion q)=> _x * q._x + _y * q._y + _z * q._z + _w * q._w;
             #endregion
             #region STATIC MEMBERS
 
@@ -3288,6 +3308,70 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Normalize(Quaternion a, TypesQuaternionNormalization types)
+            {
+                return a.Normalize(types);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static double ScalarProduct(Quaternion q1, Quaternion q2) => q1.ScalarProduct(q2);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Lerp(Quaternion q1, Quaternion q2, double amount)
+            {
+                Quaternion result;
+                double amount1 = 1 - amount;
+                double scalarProduct = ScalarProduct(q1, q2);
+
+                if(scalarProduct >= 0.0)
+                {
+                    result = amount1 * q1 + amount * q2;
+                }
+                else
+                {
+                    result = amount1 * q1 - amount * q2;
+                }
+
+                return Normalize(result, TypesQuaternionNormalization.EuclideanNormalization);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Lerp(Quaternion q1, Quaternion q2, double amount, out Quaternion result) => result = Lerp(q1, q2, amount);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Slerp(Quaternion q1, Quaternion q2, double amount)
+            {
+                double scalarProduct = ScalarProduct(q1, q2);
+                double amount2, amount3;
+                bool flag = false;
+
+                if(scalarProduct < 0.0)
+                {
+                    flag = true;
+                    scalarProduct = -scalarProduct;
+                }
+
+                if(scalarProduct > 1.0)
+                {
+                    amount2 = 1 - amount;
+                    amount3 = flag ? -amount : amount;
+                }
+                else
+                {
+                    double angle1 = Math.Acos(scalarProduct);
+                    double angle2 = (1.0) / Math.Sin(angle1);
+
+                    amount2 = Math.Sin((1 - amount) * angle1) * angle2;
+                    amount3 = flag ? -Math.Sin(amount * angle1) * angle2 : Math.Sin(amount * angle1) * angle2;
+                }
+
+                return amount2 * q1 + amount3 * q2;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void Slerp(Quaternion q1, Quaternion q2, double amount, out Quaternion result) => result = Slerp(q1, q2, amount);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion operator+(Quaternion a, Quaternion b)=> new Quaternion(a.Vector3D + b.Vector3D, a.W + b.W);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3312,6 +3396,30 @@ namespace Mathematics
             public static bool operator !=(Quaternion a, Quaternion b) => !a.Equals(b);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator +(Quaternion a)
+            {
+                return new Quaternion(+a._x, +a._y, +a._z, +a._w);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator -(Quaternion a)
+            {
+                return new Quaternion(-a._x, -a._y, -a._z, -a._w);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator++(Quaternion a)
+            {
+                return new Quaternion(a._x + 1, a._y + 1, a._z + 1, a._w + 1);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator--(Quaternion a)
+            {
+                return new Quaternion(a._x - 1, a._y - 1, a._z - 1, a._w - 1);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion Add(Quaternion a, Quaternion b) => a + b;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -3328,6 +3436,18 @@ namespace Mathematics
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Equals(Quaternion a, Quaternion b) => a.Equals(b);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Plus(Quaternion a) => +a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Negate(Quaternion a) => -a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Increment(Quaternion a) => ++a;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Decrement(Quaternion a) => --a;
             #endregion
             #region PROPERTIES
             public bool IsIdentity { get => _x == 0.0 && _y == 0.0 && _z == 0.0 && _w == 1.0; }
@@ -3337,6 +3457,7 @@ namespace Mathematics
             public double W { get => _w; }
             public Quaternion Conjugate { get => new Quaternion(_x, -_y, -_z, -_w); }
             public double Abs { get => Math.Sqrt(_x * _x + _y * _y + _z * _z + _w * _w); }
+            public double AbsSquared { get => Abs * Abs; }
             public Vector Vector3D { get => new Vector(_x, _y, _z); }
             public double Scalar { get => _w; }
             #endregion
