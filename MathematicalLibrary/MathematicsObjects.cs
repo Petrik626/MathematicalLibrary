@@ -3228,11 +3228,37 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion ConjugateQuaternionNumber(Quaternion obj) => new Quaternion(obj._x, -obj._y, -obj._z, -obj._w);
 
+            public static Quaternion XPossitiveInfinity { get => new Quaternion(double.PositiveInfinity); }
+
+            public static Quaternion YPossitiveInfinity { get => new Quaternion(y:double.PositiveInfinity); }
+
+            public static Quaternion ZPossitiveInfinity { get => new Quaternion(z: double.PositiveInfinity); }
+
+            public static Quaternion WPossitiveInfinity { get => new Quaternion(w: double.PositiveInfinity); }
+
+            public static Quaternion XNegativeInfinity { get => new Quaternion(double.NegativeInfinity); }
+
+            public static Quaternion YNegativeInfinity { get => new Quaternion(y: double.NegativeInfinity); }
+
+            public static Quaternion ZNegativeInfinity { get => new Quaternion(z: double.NegativeInfinity); }
+
+            public static Quaternion WNegativeInfinity { get => new Quaternion(w: double.NegativeInfinity); }
+
             public static Quaternion Zero { get => new Quaternion(); }
 
-            public static Quaternion NaN { get => new Quaternion(double.NaN, double.NaN, double.NaN); }
+            public static Quaternion NaN { get => new Quaternion(double.NaN, double.NaN, double.NaN, double.NaN); }
 
             public static Quaternion Infinity { get => new Quaternion(double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity); }
+
+            public static Quaternion Epsilon { get => new Quaternion(double.Epsilon, double.Epsilon, double.Epsilon, double.Epsilon); }
+
+            public static Quaternion XEpsilon { get => new Quaternion(double.Epsilon); }
+
+            public static Quaternion YEpsilon { get => new Quaternion(y: double.Epsilon); }
+
+            public static Quaternion ZEpsilon { get => new Quaternion(z: double.Epsilon); }
+
+            public static Quaternion WEpsilon { get => new Quaternion(w: double.Epsilon); }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion Parse(string s)
@@ -3375,7 +3401,19 @@ namespace Mathematics
             public static Quaternion operator+(Quaternion a, Quaternion b)=> new Quaternion(a.Vector3D + b.Vector3D, a.W + b.W);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator +(Quaternion a, double d) => new Quaternion(a._x + d, a._y, a._z, a._w);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator +(double d, Quaternion a) => a + d;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion operator -(Quaternion a, Quaternion b) => new Quaternion(a._x - b._x, a._y - b._y, a._z - b._z, a._w - b._w);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator -(Quaternion a, double d) => new Quaternion(a._x - d, a._y, a._z, a._w);
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator -(double d, Quaternion a) => new Quaternion(d - a._x, -a._y, -a._z, -a._w);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion operator*(Quaternion a, Quaternion b) => new Quaternion(a.W * b.Vector3D + b.W * a.Vector3D + Vector.Cross(a.Vector3D, b.Vector3D), a.W * b.W - a.Vector3D * b.Vector3D);
@@ -3385,6 +3423,26 @@ namespace Mathematics
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion operator *(double d, Quaternion a) => a * d;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion operator /(Quaternion q1, Quaternion q2)
+            {
+                double x = q1._x;
+                double y = q1._y;
+                double z = q1._z;
+                double w = q1._w;
+                double absSquared = q2.X * q2.X + q2.Y * q2.Y + q2.Z * q2.Z + q2.W * q2.W;
+                double num2 = 1.0 / absSquared;
+                double num3 = -q2.X * num2;
+                double num4 = -q2.Y * num2;
+                double num5 = -q2.Z * num2;
+                double num6 = q2.W * num2;
+                double num7 = y * num5 - z * num4;
+                double num8 = z * num3 - x * num5;
+                double num9 = x * num4 - y * num3;
+                double num10 = x * num3 + y * num4 + z * num5;
+                return new Quaternion(x * num6 + num3 * w + num7, y * num6 + num4 * w + num8, z * num6 + num5 * w + num9, w * num6 - num10);
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion operator /(Quaternion a, double d) => a * (1.0 / d);
@@ -3423,7 +3481,19 @@ namespace Mathematics
             public static Quaternion Add(Quaternion a, Quaternion b) => a + b;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Add(Quaternion a, double d) => a + d;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Add(double d, Quaternion a) => a + d;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion Subtract(Quaternion a, Quaternion b) => a - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Subtract(Quaternion a, double d) => a - d;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Subtract(double d, Quaternion a) => d - a;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion Multiply(Quaternion a, Quaternion b) => a * b;
@@ -3433,6 +3503,12 @@ namespace Mathematics
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion Multiply(double d, Quaternion a) => a * d;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Divide(Quaternion q1, Quaternion q2) => q1 / q2;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Quaternion Divide(Quaternion q1, double d) => q1 / d;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Equals(Quaternion a, Quaternion b) => a.Equals(b);
@@ -3450,6 +3526,17 @@ namespace Mathematics
             public static Quaternion Decrement(Quaternion a) => --a;
             #endregion
             #region PROPERTIES
+            public bool IsInfinity { get => double.IsInfinity(_x) || double.IsInfinity(_y) || double.IsInfinity(_z) || double.IsInfinity(_w); }
+            public bool IsXPossitiveInfinity { get => double.IsPositiveInfinity(_x) && _y == 0.0 && _z == 0.0 && _z == 0.0; }
+            public bool IsYPossitiveInfinity { get => double.IsPositiveInfinity(_y) && _x == 0.0 && _z == 0.0 && _w == 0.0; }
+            public bool IsZPossitiveInfinity { get => double.IsPositiveInfinity(_z) && _x == 0.0 && _y == 0.0 && _w == 0.0; }
+            public bool IsWPossitiveInfinity { get => double.IsPositiveInfinity(_w) && _x == 0.0 && _y == 0.0 && _z == 0.0; }
+            public bool IsXNegativeInfinity { get => double.IsNegativeInfinity(_x) && _y == 0.0 && _z == 0.0 && _z == 0.0; }
+            public bool IsYNegativeInfinity { get => double.IsNegativeInfinity(_y) && _x == 0.0 && _z == 0.0 && _w == 0.0; }
+            public bool IsZNegativeInfinity { get => double.IsNegativeInfinity(_z) && _x == 0.0 && _y == 0.0 && _w == 0.0; }
+            public bool IsWNegativeInfinity { get => double.IsNegativeInfinity(_w) && _x == 0.0 && _y == 0.0 && _z == 0.0; }
+            public bool IsNaN { get => double.IsNaN(_x) || double.IsNaN(_y) || double.IsNaN(_z) || double.IsNaN(_w); }
+            public bool IsZero { get => _x == 0.0 && _y == 0.0 && _z == 0.0 && _w == 0.0; }
             public bool IsIdentity { get => _x == 0.0 && _y == 0.0 && _z == 0.0 && _w == 1.0; }
             public double X { get => _x; }
             public double Y { get => _y; }
