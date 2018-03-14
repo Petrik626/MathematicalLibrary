@@ -552,6 +552,25 @@ namespace Mathematics
             {
                 throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double ToDouble()
+            {
+                return _re;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double[] ToArrayDouble()
+            {
+                return new double[] { _re, _im };
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Tuple<double,double> ToTupleDouble()
+            {
+                return new Tuple<double, double>(_re, _im);
+            }
+
             #endregion
             #region TYPE CONVERSIONS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -951,9 +970,28 @@ namespace Mathematics
                 throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public Point2D Offset(double x, double y)
             {
                 return new Point2D(_x + x, _y + y);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double ToDouble()
+            {
+                return _x;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double[] ToArrayDouble()
+            {
+                return new double[] { _x, _y };
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Tuple<double,double> ToTupleDouble()
+            {
+                return new Tuple<double, double>(_x, _y);
             }
             #endregion
             #region PROPERTIES
@@ -1173,6 +1211,12 @@ namespace Mathematics
                 if (_dimensions != 3 && obj._dimensions != 3) { throw new NotSupportedException("This operation has not been supported by mathematical object"); }
 
                 return new Vector((_components[1] * obj._components[2] - _components[2] * obj._components[1]), -(_components[0] * obj._components[2] - _components[2] * obj._components[0]), (_components[0] * obj._components[1] - _components[1] * obj._components[0]));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double[] ToArrayDouble()
+            {
+                return _components;
             }
             #endregion
             #region STATIC MEMBERS
@@ -2020,6 +2064,18 @@ namespace Mathematics
 
                 return result;
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double[,] ToSquareArrayDouble()
+            {
+                return _components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public List<List<double>> ToSqareListDouble()
+            {
+                return (List<List<double>>)this;
+            }
             #endregion
             #region PROPERTIES
             public int CountOfRow { get => _numberOfRow; }
@@ -2454,6 +2510,7 @@ namespace Mathematics
             public new Tensor Minor(int row, int column) => throw new NotSupportedException("This operation has not been supported this type");
 
             public new double Norm(TypesNormOfMatrix types) => throw new NotSupportedException("This operation has not been supported this type");
+
             #endregion
             #region STATIC MEMBERS
 
@@ -2795,6 +2852,18 @@ namespace Mathematics
             {
                 return new Point3D(_x + dx, _y + dy, _z + dz);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double[] ToArrayDouble()
+            {
+                return new double[] { _x, _y, _z };
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Tuple<double,double,double> ToTupleDouble()
+            {
+                return new Tuple<double, double, double>(_x, _y, _z);
+            }
             #endregion
             #region STATIC MEMBERS
 
@@ -3016,6 +3085,18 @@ namespace Mathematics
             {
                 return p.ToString();
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Point3D(Tuple<double,double,double> tuple)
+            {
+                return new Point3D(tuple.Item1, tuple.Item2, tuple.Item3);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator Tuple<double,double,double>(Point3D p)
+            {
+                return new Tuple<double, double, double>(p._x, p._y, p._z);
+            }
             #endregion
         }
         
@@ -3092,7 +3173,7 @@ namespace Mathematics
             }
             #endregion
             #region METHODS
-            public string Show()
+            string IMathematicalObject.Show()
             {
                 return ToString();
             }
@@ -3114,7 +3195,7 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Quaternion) ? (this / (Quaternion)obj) : throw new ArgumentException("Only quaternion type alowed");
             }
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
@@ -3211,15 +3292,33 @@ namespace Mathematics
             public Quaternion Inverse() => Conjugate / (Abs * Abs);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public Tuple<Complex, Complex> ConvertToComplexNumbers()
+            public Tuple<Complex, Complex> ToComplexNumbers()
             {
                 Complex z1, z2;
-                ConvertToComplexNumbers(this, out z1, out z2);
+                ToComplexNumbers(this, out z1, out z2);
                 return new Tuple<Complex, Complex>(z1, z2);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public double ScalarProduct(Quaternion q)=> _x * q._x + _y * q._y + _z * q._z + _w * q._w;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Matrix ToMatrix()
+            {
+                return this;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Tuple<double,double,double,double> ToTupleDouble()
+            {
+                return new Tuple<double, double, double, double>(_x, _y, _z, _w);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public double[] ToArrayDouble()
+            {
+                return new double[] { _x, _y, _z, _w };
+            }
             #endregion
             #region STATIC MEMBERS
 
@@ -3327,11 +3426,14 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void ConvertToComplexNumbers(Quaternion q, out Complex z1, out Complex z2)
+            public static void ToComplexNumbers(Quaternion q, out Complex z1, out Complex z2)
             {
                 z1 = new Complex(q._x, q._y);
                 z2 = new Complex(q._z, q._w);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static void ToMatrix(Quaternion q, out Matrix m) => m = q.ToMatrix();
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Quaternion Normalize(Quaternion a, TypesQuaternionNormalization types)
