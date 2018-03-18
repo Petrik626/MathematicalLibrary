@@ -3707,5 +3707,136 @@ namespace Mathematics
             }
             #endregion
         }
+
+        [StructLayout(LayoutKind.Auto),Serializable]
+        public sealed class Function:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Function>
+        {
+            #region FIELDS
+            private readonly Func<double, double> _expression;
+            private readonly double _xLeft;
+            private readonly double _xRight;
+            #endregion
+            #region CONSTRUCTORS
+            public Function()
+            {
+                _expression = default(Func<double, double>);
+                _xLeft = default(double);
+                _xRight = default(double);
+            }
+
+            public Function(Func<double,double> expression=null, double xLeft=0.0, double xRight=0.0)
+            {
+                _expression = expression ?? throw new ArgumentNullException("The Expression is null");
+                _xLeft = xLeft;
+                _xRight = xRight;
+            }
+            #endregion
+            #region METHODS
+
+            IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
+            {
+                return Equals(obj);
+            }
+
+            bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
+            {
+                return !Equals(obj);
+            }
+
+            string IMathematicalObject.Show()
+            {
+                return ToString();
+            }
+
+            IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool Equals(Function other)
+            {
+                return _expression == other._expression;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is Function) ? Equals((Function)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                return _expression.GetHashCode() ^ _xRight.GetHashCode() ^ _xLeft.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                return $"{_expression.Method.Name}(x)";
+            }
+
+            public string ToString(double x)
+            {
+                return $"{(_expression.Method.Name)}(x):{ _expression.Invoke(x)}";
+            }
+
+            public Func<double,double> ToFuncDoubleDouble()
+            {
+                return _expression;
+            }
+
+            public double Invoke(double x)
+            {
+                return _expression.Invoke(x);
+            }
+            #endregion
+            #region TYPE CONVERSIONS
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Function(Func<double,double> expression)
+            {
+                return new Function(expression);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator Func<double, double>(Function func)
+            {
+                return func._expression;
+            }
+            #endregion
+        }
     }
 }
