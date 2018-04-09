@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text;
+using static MathematicalLibrary.Functions.DoubleFunction;
 
 namespace Mathematics
 {
@@ -4060,6 +4061,41 @@ namespace Mathematics
                 double res2 = (f.Invoke(x + step2) - 2 * f.Invoke(x) + f.Invoke(x - step2)) / (step2 * step2);
 
                 return res2 + (res2 - res1) / (Math.Pow(g, p) - 1);
+            }
+
+            public static double FindDerivative(Function f, double x, int order)
+            {
+                if (order < 0) { throw new ArithmeticException(); }
+                switch(order)
+                {
+                    case 0: return f.Invoke(x);
+                    case 1: return FindFirstDerivative(f, x);
+                    case 2: return FindSecondDerivative(f, x);
+                    default:
+                        {
+                            List<Point2D> points = new List<Point2D>();
+                            double a = x - 0.001, b = x + 0.001, h = (b - a) / (order), sum = 0.0, p;
+                            for(int i=0;i<=order;i++)
+                            {
+                                points.Add(new Point2D(a + i * h, f.Invoke(a + i * h)));
+                            }
+
+                            for(int i=0; i<points.Count; i++)
+                            {
+                                p = 1.0;
+                                for(int j=0; j<points.Count; j++)
+                                {
+                                    if(j!=i)
+                                    {
+                                        p *= (points[i].X - points[j].X);
+                                    }
+                                }
+                                sum += (points[i].Y / p);
+                            }
+
+                            return sum * Factorial(order);
+                        }
+                }
             }
             #endregion
         }
