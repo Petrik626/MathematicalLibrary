@@ -1040,6 +1040,70 @@ namespace Mathematics
                 }
             }
 
+            public Vector(double c1, double c2):this(2)
+            {
+                _components[0] = c1; _components[1] = c2;
+            }
+
+            public Vector(double c1, double c2, double c3):this(3)
+            {
+                _components[0] = c1; _components[1] = c2; _components[2] = c3;
+            }
+
+            public Vector(double c1, double c2, double c3, double c4):this(4)
+            {
+                _components[0] = c1;_components[1] = c2;
+                _components[2] = c3;_components[3] = c4;
+            }
+
+            public Vector(double c1, double c2, double c3, double c4, double c5):this(5)
+            {
+                _components[0] = c1; _components[1] = c2;
+                _components[2] = c3;_components[3] = c4;
+                _components[4] = c5;
+            }
+
+            public Vector(double c1, double c2, double c3, double c4, double c5, double c6):this(6)
+            {
+                _components[0] = c1;_components[1] = c2;
+                _components[2] = c3;_components[3] = c4;
+                _components[4] = c5;_components[5] = c6;
+            }
+
+            public Vector(double c1, double c2, double c3, double c4, double c5, double c6, double c7):this(7)
+            {
+                _components[0] = c1; _components[1] = c2;
+                _components[2] = c3; _components[3] = c4;
+                _components[4] = c5; _components[5] = c6;
+                _components[6] = c7;
+            }
+
+            public Vector(double c1, double c2, double c3, double c4, double c5, double c6, double c7, double c8):this(8)
+            {
+                _components[0] = c1; _components[1] = c2;
+                _components[2] = c3; _components[3] = c4;
+                _components[4] = c5; _components[5] = c6;
+                _components[6] = c7; _components[7] = c8;
+            }
+
+            public Vector(double c1, double c2, double c3, double c4, double c5, double c6, double c7, double c8, double c9):this(9)
+            {
+                _components[0] = c1; _components[1] = c2;
+                _components[2] = c3; _components[3] = c4;
+                _components[4] = c5; _components[5] = c6;
+                _components[6] = c7; _components[7] = c8;
+                _components[8] = c9;
+            }
+
+            public Vector(double c1, double c2, double c3, double c4, double c5, double c6, double c7, double c8, double c9, double c10):this(10)
+            {
+                _components[0] = c1; _components[1] = c2;
+                _components[2] = c3; _components[3] = c4;
+                _components[4] = c5; _components[5] = c6;
+                _components[6] = c7; _components[7] = c8;
+                _components[8] = c9; _components[9] = c10;
+            }
+
             public Vector(params double[] coords)
             {
                 if (coords.Length == 1 || coords.Length == 0) { throw new ArgumentException("The vector measurement can not be equal to unity"); }
@@ -1533,6 +1597,7 @@ namespace Mathematics
             public double Abs { get => Math.Sqrt(_components.Sum(n => n * n)); }
             public int Measurement { get => _dimensions; }
             public double[] ComponentsVector { get => _components; }
+            [IndexerName("Component")]
             public double this[int index]
             {
                 get
@@ -3807,6 +3872,11 @@ namespace Mathematics
                 return $"{(_expression.Method.Name)}(x):{ _expression.Invoke(x)}";
             }
 
+            public double ToDouble(double x)
+            {
+                return _expression(x);
+            }
+
             public Func<double,double> ToFuncDoubleDouble()
             {
                 return _expression;
@@ -3817,7 +3887,7 @@ namespace Mathematics
                 return _expression.Invoke(x);
             }
             #endregion
-            #region STATIC MEMBERS
+            #region OPERATORS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Function operator+(Function f1, Function f2)
             {
@@ -3953,6 +4023,12 @@ namespace Mathematics
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Function(double d)
+            {
+                return new Function((x) => d);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static explicit operator Func<double, double>(Function func)
             {
                 return func._expression;
@@ -3962,6 +4038,28 @@ namespace Mathematics
             public static explicit operator string(Function f)
             {
                 return f.ToString();
+            }
+            #endregion
+            #region STATIC MEMBERS
+
+            public static double FindFirstDerivative(Function f, double x)
+            {
+                double step1 = 0.001, step2 = 0.0001, p = 2.0, g = step1 / step2;
+
+                double res1 = (f.Invoke(x + step1) - f.Invoke(x - step1)) / (2.0 * step1);
+                double res2 = (f.Invoke(x + step2) - f.Invoke(x - step2)) / (2.0 * step2);
+
+                return res2 + (res2 - res1) / (Math.Pow(g, p) - 1);
+            }
+
+            public static double FindSecondDerivative(Function f, double x)
+            {
+                double step1 = 0.001, step2 = 0.0001, p = 2.0, g = step1 / step2;
+
+                double res1 = (f.Invoke(x + step1) - 2 * f.Invoke(x) + f.Invoke(x - step1)) / (step1 * step1);
+                double res2 = (f.Invoke(x + step2) - 2 * f.Invoke(x) + f.Invoke(x - step2)) / (step2 * step2);
+
+                return res2 + (res2 - res1) / (Math.Pow(g, p) - 1);
             }
             #endregion
         }

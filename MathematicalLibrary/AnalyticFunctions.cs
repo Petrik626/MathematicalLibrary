@@ -68,5 +68,22 @@ namespace MathematicalLibrary
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Complex Arccoth(Complex z) => 0.5 * Ln((z + 1) / (z - 1));
         }
+
+        public static class DoubleFunction
+        {
+            public static double Factorial(int n)
+            {
+                if (n < 0) { return 0; }
+
+                if (n == 0)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return n * Factorial(n - 1);
+                }
+            }
+        }
     }
 }
