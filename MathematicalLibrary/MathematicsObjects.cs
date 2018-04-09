@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text;
+using System.Reflection;
 
 namespace Mathematics
 {
@@ -3713,39 +3714,33 @@ namespace Mathematics
         {
             #region FIELDS
             private readonly Func<double, double> _expression;
-            private readonly double _xLeft;
-            private readonly double _xRight;
             #endregion
             #region CONSTRUCTORS
             public Function()
             {
                 _expression = default(Func<double, double>);
-                _xLeft = default(double);
-                _xRight = default(double);
             }
 
-            public Function(Func<double,double> expression=null, double xLeft=0.0, double xRight=0.0)
+            public Function(Func<double,double> expression=null)
             {
                 _expression = expression ?? throw new ArgumentNullException("The Expression is null");
-                _xLeft = xLeft;
-                _xRight = xRight;
             }
             #endregion
             #region METHODS
 
             IMathematicalObject IArithmeticOperations.Addition(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Function) ? (this + (Function)obj) : throw new ArgumentException("Only function type alowed");
             }
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Function) ? (this / (Function)obj) : throw new ArgumentException("Only function type alowed");
             }
 
             IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Function) ? (this * (Function)obj) : throw new ArgumentException("Only function type alowed");
             }
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
@@ -3755,22 +3750,22 @@ namespace Mathematics
 
             bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
@@ -3785,12 +3780,12 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Subtraction(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                return (obj is Function) ? (this - (Function)obj) : throw new ArgumentException("Only function type alowed");
             }
 
             public bool Equals(Function other)
             {
-                return _expression == other._expression;
+                return _expression.GetHashCode() == other.GetHashCode();
             }
 
             public override bool Equals(object obj)
@@ -3800,7 +3795,7 @@ namespace Mathematics
 
             public override int GetHashCode()
             {
-                return _expression.GetHashCode() ^ _xRight.GetHashCode() ^ _xLeft.GetHashCode();
+                return _expression.GetHashCode();
             }
 
             public override string ToString()
@@ -3823,8 +3818,135 @@ namespace Mathematics
                 return _expression.Invoke(x);
             }
             #endregion
+            #region STATIC MEMBERS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator+(Function f1, Function f2)
+            {
+                return new Function((x) => f1._expression(x) + f2._expression(x));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator+(Function f, double b)
+            {
+                return new Function((x) => f._expression(x) + b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator +(double b, Function f)
+            {
+                return f + b;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator-(Function f1, Function f2)
+            {
+                return new Function((x) => f1._expression(x) - f2._expression(x));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator-(Function f, double b)
+            {
+                return new Function((x) => f._expression(x) - b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator-(double b, Function f)
+            {
+                return new Function((x) => b - f._expression(x));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator*(Function f1, Function f2)
+            {
+                return new Function((x) => f1._expression(x) * f2._expression(x));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator*(Function f, double b)
+            {
+                return new Function((x) => f._expression(x) * b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator*(double b, Function f)
+            {
+                return f * b;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator/(Function f1, Function f2)
+            {
+                return new Function((x) => f1._expression(x) / f2._expression(x));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator/(Function f, double b)
+            {
+                return new Function((x) => f._expression(x) / b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function operator/(double b, Function f)
+            {
+                return new Function((x) => b / f._expression(x));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator==(Function f1, Function f2)
+            {
+                return f1.Equals(f2);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator!=(Function f1, Function f2)
+            {
+                return !f1.Equals(f2);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Add(Function f1, Function f2) => f1 + f2;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Add(Function f, double b) => f + b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Add(double b, Function f) => b + f;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Subtract(Function f1, Function f2) => f1 - f2;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Subtract(Function f, double b) => f - b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Subtract(double b, Function f) => b - f;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Multiply(Function f1, Function f2) => f1 * f2;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Multiply(Function f, double b) => f * b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Multiply(double b, Function f) => b * f;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Divide(Function f1, Function f2) => f1 / f2;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Divide(Function f, double b) => f / b;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Function Divide(double b, Function f) => b / f;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Equals(Function f1, Function f2) => f1 == f2;
+            #endregion
+            #region PROPERTIE
+            public Func<double,double> Expression { get => _expression; }
+            #endregion
             #region TYPE CONVERSIONS
-            
+
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static implicit operator Function(Func<double,double> expression)
             {
@@ -3835,6 +3957,12 @@ namespace Mathematics
             public static explicit operator Func<double, double>(Function func)
             {
                 return func._expression;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator string(Function f)
+            {
+                return f.ToString();
             }
             #endregion
         }
