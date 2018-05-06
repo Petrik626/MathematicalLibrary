@@ -3850,7 +3850,7 @@ namespace Mathematics
 
             public bool Equals(Function other)
             {
-                return _expression.GetHashCode() == other.GetHashCode();
+                return GetHashCode() == other.GetHashCode();
             }
 
             public override bool Equals(object obj)
@@ -3860,7 +3860,15 @@ namespace Mathematics
 
             public override int GetHashCode()
             {
-                return _expression.GetHashCode();
+                int hash = 17;
+                double a = -0.5, b = 0.5, h = (b - a) / 6.0;
+
+                for(double x=a;x<=b;x+=h)
+                {
+                    hash *= (hash * 31) + _expression(x).GetHashCode();
+                }
+
+                return hash;
             }
 
             public override string ToString()
