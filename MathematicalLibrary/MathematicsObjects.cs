@@ -3094,7 +3094,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public sealed class Point3D:IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point3D>, IEnumerable<double>
+        public sealed class Point3D:IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point3D>, IEnumerable<double>, IArithmeticOperations<Point3D, Vector>, IComparisonOperations<Point3D>
         {
             #region FIELDS
             private readonly double _x;
@@ -3119,7 +3119,8 @@ namespace Mathematics
             #endregion
             #region METHODS
 
-            string IMathematicalObject.Show()
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public string Show()
             {
                 return ToString();
             }
@@ -3146,32 +3147,32 @@ namespace Mathematics
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
             {
-                return Equals(obj);
+                return Equals((Point3D)obj);
             }
 
             bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
             {
-                return !Equals(obj);
+                return !Equals((Point3D)obj);
             }
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Point3D) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Point3D) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Point3D) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Point3D) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             public bool Equals(Point3D other)
@@ -3222,6 +3223,59 @@ namespace Mathematics
             public Tuple<double,double,double> ToTupleDouble()
             {
                 return new Tuple<double, double, double>(_x, _y, _z);
+            }
+
+            Vector IArithmeticOperations<Point3D,Vector>.Addition(Point3D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Vector Subtraction(Point3D obj)
+            {
+                return this - obj;
+            }
+
+            Vector IArithmeticOperations<Point3D, Vector>.Multiplication(Point3D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            Vector IArithmeticOperations<Point3D, Vector>.Division(Point3D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsEquality(Point3D obj)
+            {
+                return Equals(obj);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsNotEquality(Point3D obj)
+            {
+                return !Equals(obj);
+            }
+
+            bool IComparisonOperations<Point3D>.OperationIsMore(Point3D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Point3D>.OperationIsLess(Point3D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Point3D>.OperationIsMoreOrEqual(Point3D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Point3D>.OperationIsLessOrEqual(Point3D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
             #endregion
             #region STATIC MEMBERS
@@ -3405,7 +3459,7 @@ namespace Mathematics
             public static Point3D Plus(Point3D a) => +a;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Point3D Negate(Point3D a) => -a;
+            public static Point3D Negate(Point3D a) => -a;            
             #endregion
             #region PROPERTIES
             public double X { get => _x; }
@@ -3470,7 +3524,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto),Serializable]
-        public sealed class Quaternion:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Quaternion>,IEnumerable<double>
+        public sealed class Quaternion:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Quaternion>,IEnumerable<double>, IArithmeticOperations<Quaternion, Quaternion>, IComparisonOperations<Quaternion>
         {
             #region FIELDS
             private readonly double _x;
@@ -3532,7 +3586,9 @@ namespace Mathematics
             }
             #endregion
             #region METHODS
-            string IMathematicalObject.Show()
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public string Show()
             {
                 return ToString();
             }
@@ -3559,32 +3615,32 @@ namespace Mathematics
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
             {
-                return Equals(obj);
+                return Equals((Quaternion)obj);
             }
 
             bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
             {
-                return !Equals(obj);
+                return !Equals((Quaternion)obj);
             }
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Quaternion) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Quaternion) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Quaternion) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Quaternion) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             public bool Equals(Quaternion other)
@@ -3677,6 +3733,62 @@ namespace Mathematics
             public double[] ToArrayDouble()
             {
                 return new double[] { _x, _y, _z, _w };
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Quaternion Addition(Quaternion obj)
+            {
+                return this + obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Quaternion Subtraction(Quaternion obj)
+            {
+                return this - obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Quaternion Multiplication(Quaternion obj)
+            {
+                return this * obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Quaternion Division(Quaternion obj)
+            {
+                return this / obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsEquality(Quaternion obj)
+            {
+                return Equals(obj);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsNotEquality(Quaternion obj)
+            {
+                return !Equals(obj);
+            }
+
+            bool IComparisonOperations<Quaternion>.OperationIsMore(Quaternion obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Quaternion>.OperationIsLess(Quaternion obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Quaternion>.OperationIsMoreOrEqual(Quaternion obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Quaternion>.OperationIsLessOrEqual(Quaternion obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
             #endregion
             #region STATIC MEMBERS
@@ -3984,7 +4096,7 @@ namespace Mathematics
             public static Quaternion Increment(Quaternion a) => ++a;
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static Quaternion Decrement(Quaternion a) => --a;
+            public static Quaternion Decrement(Quaternion a) => --a;           
             #endregion
             #region PROPERTIES
             public bool IsInfinity { get => double.IsInfinity(_x) || double.IsInfinity(_y) || double.IsInfinity(_z) || double.IsInfinity(_w); }
@@ -4068,7 +4180,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto),Serializable]
-        public sealed class Function:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Function>
+        public sealed class Function:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Function>, IArithmeticOperations<Function, Function>, IComparisonOperations<Function>
         {
             #region FIELDS
             private readonly Func<double, double> _expression;
@@ -4103,35 +4215,35 @@ namespace Mathematics
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
             {
-                return Equals(obj);
+                return Equals((Function)obj);
             }
 
             bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Function) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Function) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Function) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Function) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
             {
-                return !Equals(obj);
+                return !Equals((Function)obj);
             }
 
-            string IMathematicalObject.Show()
+            public string Show()
             {
                 return ToString();
             }
@@ -4187,6 +4299,62 @@ namespace Mathematics
             public double Invoke(double x)
             {
                 return _expression.Invoke(x);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Function Addition(Function obj)
+            {
+                return this + obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Function Subtraction(Function obj)
+            {
+                return this - obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Function Multiplication(Function obj)
+            {
+                return this * obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Function Division(Function obj)
+            {
+                return this / obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsEquality(Function obj)
+            {
+                return Equals(obj);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsNotEquality(Function obj)
+            {
+                return !Equals(obj);
+            }
+
+            bool IComparisonOperations<Function>.OperationIsMore(Function obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Function>.OperationIsLess(Function obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Function>.OperationIsMoreOrEqual(Function obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Function>.OperationIsLessOrEqual(Function obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
             #endregion
             #region OPERATORS
@@ -4397,7 +4565,7 @@ namespace Mathematics
                             return sum * Factorial(order);
                         }
                 }
-            }
+            }            
             #endregion
         }
     }
