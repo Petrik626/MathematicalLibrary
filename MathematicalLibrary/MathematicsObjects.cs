@@ -25,6 +25,15 @@ namespace Mathematics
             IMathematicalObject Division(IMathematicalObject obj);
         }
 
+        public interface IArithmeticOperations<in TInput, out TResult> where TInput:IMathematicalObject 
+                                                                        where TResult:IMathematicalObject
+        {
+            TResult Addition(TInput obj);
+            TResult Subtraction(TInput obj);
+            TResult Multiplication(TInput obj);
+            TResult Division(TInput obj);
+        }
+
         public interface IComparisonOperations
         {
             bool OperationIsEquality(IMathematicalObject obj);
@@ -35,8 +44,18 @@ namespace Mathematics
             bool OperationIsLessOrEqual(IMathematicalObject obj);
         }
 
+        public interface IComparisonOperations<in T> where T:IMathematicalObject
+        {
+            bool OperationIsEquality(T obj);
+            bool OperationIsNotEquality(T obj);
+            bool OperationIsMore(T obj); // Операция больше
+            bool OperationIsLess(T obj); // Операция меньше
+            bool OperationIsMoreOrEqual(T obj);
+            bool OperationIsLessOrEqual(T obj);
+        }
+
         [StructLayout(LayoutKind.Auto), Serializable]
-        public struct Complex : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Complex>, IEnumerable<double>
+        public struct Complex : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Complex>, IEnumerable<double>, IArithmeticOperations<Complex, Complex>, IComparisonOperations<Complex>
         {
             #region FIELDS
             private readonly double _re;
@@ -499,7 +518,8 @@ namespace Mathematics
                 return GetEnumerator();
             }
 
-            string IMathematicalObject.Show()
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public string Show()
             {
                 return ToString();
             }
@@ -526,32 +546,32 @@ namespace Mathematics
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
             {
-                return Equals(obj);
+                return Equals((Complex)obj);
             } 
 
             bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
             {
-                return !Equals(obj);
+                return !Equals((Complex)obj);
             }
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Complex) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Complex) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Complex) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Complex) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -570,6 +590,63 @@ namespace Mathematics
             public Tuple<double,double> ToTupleDouble()
             {
                 return new Tuple<double, double>(_re, _im);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Complex Addition(Complex obj)
+            {
+                return this + obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Complex Subtraction(Complex obj)
+            {
+                return this - obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Complex Multiplication(Complex obj)
+            {
+                return this * obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Complex Division(Complex obj)
+            {
+                return this / obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsEquality(Complex obj)
+            {
+                return Equals(obj);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsNotEquality(Complex obj)
+            {
+                return !Equals(obj);
+            }
+
+
+            bool IComparisonOperations<Complex>.OperationIsMore(Complex obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Complex>.OperationIsLess(Complex obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Complex>.OperationIsMoreOrEqual(Complex obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Complex>.OperationIsLessOrEqual(Complex obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             #endregion
@@ -641,7 +718,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public struct Point2D : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point2D>, IEnumerable<double>
+        public struct Point2D : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point2D>, IEnumerable<double>, IArithmeticOperations<Point2D, Vector>, IComparisonOperations<Point2D>
         {
             #region FIELDS
             private readonly double _x;
@@ -916,7 +993,8 @@ namespace Mathematics
                 return $"[X={_x};\tY={_y}]";
             }
 
-            string IMathematicalObject.Show()
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public string Show()
             {
                 return ToString();
             }
@@ -943,32 +1021,32 @@ namespace Mathematics
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
             {
-                return Equals(obj);
+                return Equals((Point2D)obj);
             }
 
             bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
             {
-                return !Equals(obj);
+                return !Equals((Point2D)obj);
             }
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Point2D) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Point2D) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Point2D) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Point2D) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -994,6 +1072,59 @@ namespace Mathematics
             {
                 return new Tuple<double, double>(_x, _y);
             }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsEquality(Point2D obj)
+            {
+                return Equals(obj);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsNotEquality(Point2D obj)
+            {
+                return !Equals(obj);
+            }
+
+            bool IComparisonOperations<Point2D>.OperationIsMore(Point2D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Point2D>.OperationIsLess(Point2D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Point2D>.OperationIsMoreOrEqual(Point2D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Point2D>.OperationIsLessOrEqual(Point2D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            Vector IArithmeticOperations<Point2D,Vector>.Addition(Point2D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Vector Subtraction(Point2D obj)
+            {
+                return this - obj;
+            }
+
+            Vector IArithmeticOperations<Point2D, Vector>.Multiplication(Point2D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            Vector IArithmeticOperations<Point2D, Vector>.Division(Point2D obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
             #endregion
             #region PROPERTIES
             public double X { get => _x; }
@@ -1012,7 +1143,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public sealed class Vector : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Vector>, IEnumerable<double>
+        public sealed class Vector : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Vector>, IEnumerable<double>, IArithmeticOperations<Vector, Vector>, IArithmeticOperations<Matrix, Vector>, IComparisonOperations<Vector>
         {
             #region FIELDS
             private readonly double[] _components;
@@ -1182,7 +1313,7 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
             public bool Equals(Vector other)
@@ -1228,40 +1359,44 @@ namespace Mathematics
 
             IMathematicalObject IArithmeticOperations.Multiplication(IMathematicalObject obj)
             {
-                return (obj is Vector) ? Cross((Vector)obj) : (obj is Matrix) ? (this * (Matrix)obj) : throw new ArgumentException("Only vector or matrix types allowed");
+                bool flag1 = obj is Vector;
+                bool flag2 = obj is Matrix;
+
+                return flag1 ? Multiplication((Vector)obj) : (flag2) ? Multiplication((Matrix)obj) : throw new ArgumentException("Only vector or matrix types allowed");
             }
 
             bool IComparisonOperations.OperationIsEquality(IMathematicalObject obj)
             {
-                return Equals(obj);
+                return Equals((Vector)obj);
             }
 
             bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Vector) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Vector) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Vector) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Vector) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsNotEquality(IMathematicalObject obj)
             {
-                return !Equals(obj);
+                return !Equals((Vector)obj);
             }
 
-            string IMathematicalObject.Show()
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public string Show()
             {
                 return ToString();
             }
@@ -1282,6 +1417,82 @@ namespace Mathematics
             public double[] ToArrayDouble()
             {
                 return _components;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Vector Addition(Vector obj)
+            {
+                return this + obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Vector Subtraction(Vector obj)
+            {
+                return this - obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Vector Multiplication(Vector obj)
+            {
+                return Cross(obj);
+            }
+
+            Vector IArithmeticOperations<Vector, Vector>.Division(Vector obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            Vector IArithmeticOperations<Matrix, Vector>.Addition(Matrix obj)
+            {
+                throw new NotSupportedException();
+            }
+
+            Vector IArithmeticOperations<Matrix, Vector>.Subtraction(Matrix obj)
+            {
+                throw new NotSupportedException();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Vector Multiplication(Matrix obj)
+            {
+                return this * obj;
+            }
+
+            Vector IArithmeticOperations<Matrix, Vector>.Division(Matrix obj)
+            {
+                throw new NotSupportedException();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsEquality(Vector obj)
+            {
+                return Equals(obj);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsNotEquality(Vector obj)
+            {
+                return !Equals(obj);
+            }
+
+            bool IComparisonOperations<Vector>.OperationIsMore(Vector obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Vector>.OperationIsLess(Vector obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Vector>.OperationIsMoreOrEqual(Vector obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Vector>.OperationIsLessOrEqual(Vector obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
             #endregion
             #region STATIC MEMBERS
@@ -1621,7 +1832,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public class Matrix : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Matrix>
+        public class Matrix : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Matrix>, IArithmeticOperations<Matrix, Matrix>, IComparisonOperations<Matrix>
         {
             #region FIELDS
             private readonly int _numberOfRow;
@@ -1943,7 +2154,8 @@ namespace Mathematics
                 return sb.ToString();
             }
 
-            string IMathematicalObject.Show()
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public virtual string Show()
             {
                 return ToString();
             }
@@ -1963,7 +2175,7 @@ namespace Mathematics
                 bool f1 = (obj is Matrix);
                 bool f2 = (obj is Vector);
 
-                return f1 ? (this * (Matrix)obj) : f2 ? (IMathematicalObject)(this * (Vector)obj) : throw new ArgumentException("Only matrix or vector types allowed");
+                return f1 ? Multiplication((Matrix)obj) : f2 ? (IMathematicalObject)(this * (Vector)obj) : throw new ArgumentException("Only matrix or vector types allowed");
             }
 
             IMathematicalObject IArithmeticOperations.Division(IMathematicalObject obj)
@@ -1983,22 +2195,22 @@ namespace Mathematics
 
             bool IComparisonOperations.OperationIsMore(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Matrix) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLess(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Matrix) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsMoreOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Matrix) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             bool IComparisonOperations.OperationIsLessOrEqual(IMathematicalObject obj)
             {
-                throw new NotSupportedException("This operation has not been supported by mathematical object");
+                return (obj is Matrix) ? throw new NotSupportedException("This operation has not been supported by mathematical object") : false;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -2141,6 +2353,62 @@ namespace Mathematics
             public List<List<double>> ToSqareListDouble()
             {
                 return (List<List<double>>)this;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Matrix Addition(Matrix obj)
+            {
+                return this + obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Matrix Subtraction(Matrix obj)
+            {
+                return this - obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Matrix Multiplication(Matrix obj)
+            {
+                return this * obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public Matrix Division(Matrix obj)
+            {
+                return this / obj;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsEquality(Matrix obj)
+            {
+                return Equals(obj);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool OperationIsNotEquality(Matrix obj)
+            {
+                return !Equals(obj);
+            }
+
+            bool IComparisonOperations<Matrix>.OperationIsMore(Matrix obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Matrix>.OperationIsLess(Matrix obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Matrix>.OperationIsMoreOrEqual(Matrix obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            bool IComparisonOperations<Matrix>.OperationIsLessOrEqual(Matrix obj)
+            {
+                throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
             #endregion
             #region PROPERTIES
@@ -2514,7 +2782,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public sealed class Tensor : Matrix
+        public sealed class Tensor : Matrix, IArithmeticOperations<Tensor, Tensor>
         {
             #region FIELD
             private readonly int _rank;
@@ -2527,6 +2795,12 @@ namespace Mathematics
             public Tensor() : base() => _rank = 2;
             #endregion
             #region METHODS
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public override string Show()
+            {
+                return base.ToString();
+            }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public new Tensor Transpose() => new Tensor(base.Transpose().Components);
@@ -2577,6 +2851,25 @@ namespace Mathematics
 
             public new double Norm(TypesNormOfMatrix types) => throw new NotSupportedException("This operation has not been supported this type");
 
+            public Tensor Addition(Tensor obj)
+            {
+                return this + obj;
+            }
+
+            public Tensor Subtraction(Tensor obj)
+            {
+                return this - obj;
+            }
+
+            public Tensor Multiplication(Tensor obj)
+            {
+                return this * obj;
+            }
+
+            Tensor IArithmeticOperations<Tensor,Tensor>.Division(Tensor obj)
+            {
+                throw new NotSupportedException();
+            }
             #endregion
             #region STATIC MEMBERS
 
