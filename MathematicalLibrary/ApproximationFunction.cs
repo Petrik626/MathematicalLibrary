@@ -163,6 +163,199 @@ namespace Mathematics
             #endregion
         }
 
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public class SortedNodes:IEnumerable<Node>, IList<Node>, ICollection<Node>, IEquatable<SortedNodes>
+        {
+            #region FIELDS
+            private List<Node> _nodes;
+            private Func<Node, double> _keySelector = (node) => node.X;
+            #endregion
+            #region CONSTRUCTORS
+            public SortedNodes() => _nodes = new List<Node>();
+            public SortedNodes(IEnumerable<Node> nodes) => _nodes = SortedNodesMethod(nodes);
+            public SortedNodes(int capacity) => _nodes = new List<Node>(capacity);
+            #endregion;
+            #region METHODS
+            private List<Node> SortedNodesMethod(IEnumerable<Node> nodes)
+            {
+                return nodes.OrderBy(_keySelector).ToList();
+            }
+
+            public Node this[int index] { get => _nodes[index]; set => _nodes[index] = value; }
+
+            public int Count => _nodes.Count;
+
+            public bool IsReadOnly => false;
+
+            public void Add(Node item)
+            {
+                int index = _nodes.IndexOf(item);
+
+                if(index==-1)
+                {
+                    _nodes.Add(item);
+                }
+
+                _nodes = SortedNodesMethod(_nodes);
+                return;
+            }
+
+            public void AddRange(IEnumerable<Node> nodes)
+            {
+                _nodes.AddRange(nodes);
+                _nodes = SortedNodesMethod(_nodes);
+            }
+
+            public void Clear()
+            {
+                _nodes.Clear();
+            }
+
+            public bool Contains(Node item)
+            {
+                return _nodes.Contains(item);
+            }
+
+            public void CopyTo(Node[] array, int arrayIndex)
+            {
+                _nodes.CopyTo(array, arrayIndex);
+            }
+
+            public IEnumerator<Node> GetEnumerator()
+            {
+                return _nodes.GetEnumerator();
+            }
+
+            public int IndexOf(Node item)
+            {
+                return _nodes.IndexOf(item);
+            }
+
+            public void Insert(int index, Node item)
+            {
+                _nodes.Insert(index, item);
+            }
+
+            public bool Remove(Node item)
+            {
+                return _nodes.Remove(item);
+            }
+
+            public void RemoveAt(int index)
+            {
+                _nodes.RemoveAt(index);
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return GetEnumerator();
+            }
+
+            public Node[] ToArray()
+            {
+                return _nodes.ToArray();
+            }
+
+            public void ForEach(Action<Node> action)
+            {
+                _nodes.ForEach(action);
+            }
+
+            public int FindLastIndex(Predicate<Node> match)
+            {
+                return _nodes.FindLastIndex(match);
+            }
+
+            public int FindLastIndex(int startIndex, Predicate<Node> match)
+            {
+                return _nodes.FindLastIndex(startIndex, match);
+            }
+
+            public int FindLastIndex(int startIndex, int count, Predicate<Node> match)
+            {
+                return _nodes.FindLastIndex(startIndex, count, match);
+            }
+
+            public Node FindLast(Predicate<Node> match)
+            {
+                return _nodes.FindLast(match);
+            }
+
+            public int FindIndex(Predicate<Node> match)
+            {
+                return _nodes.FindIndex(match);
+            }
+
+            public int FindIndex(int startIndex, Predicate<Node> match)
+            {
+                return _nodes.FindIndex(startIndex, match);
+            }
+
+            public int FindIndex(int startIndex, int count, Predicate<Node> match)
+            {
+                return _nodes.FindIndex(startIndex, count, match);
+            }
+
+            public List<Node> FindAll(Predicate<Node> match)
+            {
+                return _nodes.FindAll(match);
+            }
+
+            public Node Find(Predicate<Node> match)
+            {
+                return _nodes.Find(match);
+            }
+
+            public bool Exists(Predicate<Node> match)
+            {
+                return _nodes.Exists(match);
+            }
+
+            public bool Equals(SortedNodes other)
+            {
+                Node[] nodes = SortedNodesMethod(other._nodes).ToArray();
+
+                IStructuralEquatable equatable = _nodes.ToArray();
+
+                return equatable.Equals(nodes, StructuralComparisons.StructuralEqualityComparer);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is SortedNodes) ? Equals((SortedNodes)obj): false;
+            }
+
+            public override int GetHashCode()
+            {
+                int hash = 17;
+
+                foreach(var el in _nodes)
+                {
+                    hash *= (hash * 31) + el.GetHashCode();
+                }
+
+                return hash;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder builder = new StringBuilder();
+
+                foreach(var el in _nodes)
+                {
+                    builder.Append(el.ToString() + "\n");
+                }
+
+                return builder.ToString();
+            }
+            #endregion
+            #region STATIC MEMBERS
+            public static implicit operator SortedNodes(Node[] nodes)
+            {
+                return new SortedNodes(nodes);
+            }
+            #endregion
+        }
         internal static class Extensions
         {
             public static Node ToNode(this double[] array)
