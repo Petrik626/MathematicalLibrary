@@ -363,6 +363,39 @@ namespace Mathematics
             }
             #endregion
         }
+
+        public enum TypeInterpolation
+        {
+            NewtonPolynomial, LagrangPolynomial, HermitPolynomial, SplineInterpolation 
+        }
+
+        public class Interpolation
+        {
+            #region FIELDS
+            private SortedNodes _nodes;
+            private TypeInterpolation _type;
+            private Function _baseFunction;
+            #endregion
+            #region Constructors
+            public Interpolation(TypeInterpolation type, IEnumerable<Node> nodes, Function baseFunction)
+            {
+                _type = type;
+                _nodes = (SortedNodes)nodes;
+                _baseFunction = baseFunction;
+            }
+
+            public Interpolation(IEnumerable<Node> nodes, Function baseFunction):this(TypeInterpolation.NewtonPolynomial, nodes, baseFunction) { }
+
+            public Interpolation(TypeInterpolation type, IEnumerable<Point2D> nodes, Function baseFunction)
+            {
+                _type = type;
+                _nodes = nodes.ToSortedNodes();
+                _baseFunction = baseFunction;
+            }
+
+            public Interpolation(IEnumerable<Point2D> nodes, Function baseFunction):this(TypeInterpolation.NewtonPolynomial, nodes, baseFunction) { }
+            #endregion
+        }
         internal static class Extensions
         {
             public static Node ToNode(this double[] array)
@@ -375,6 +408,11 @@ namespace Mathematics
                 {
                     return new Node();
                 }
+            }
+
+            public static SortedNodes ToSortedNodes(this IEnumerable<Point2D> nodes)
+            {
+                return new SortedNodes(nodes.Select(p => new Node(p)));
             }
         }
     }
