@@ -181,7 +181,15 @@ namespace Mathematics
                 return nodes.OrderBy(_keySelector).ToList();
             }
 
-            public Node this[int index] { get => _nodes[index]; set => _nodes[index] = value; }
+            public Node this[int index]
+            {
+                get => _nodes[index];
+                set
+                {
+                    _nodes[index] = value;
+                    _nodes = SortedNodesMethod(_nodes);
+                }
+            }
 
             public int Count => _nodes.Count;
 
@@ -189,14 +197,13 @@ namespace Mathematics
 
             public void Add(Node item)
             {
-                int index = _nodes.IndexOf(item);
 
-                if(index==-1)
+                if(!_nodes.Contains(item))
                 {
                     _nodes.Add(item);
+                    _nodes = SortedNodesMethod(_nodes);
                 }
 
-                _nodes = SortedNodesMethod(_nodes);
                 return;
             }
 
