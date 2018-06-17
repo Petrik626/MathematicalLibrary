@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Collections;
 using Mathematics.Objects;
 using System.Text.RegularExpressions;
@@ -57,9 +58,11 @@ namespace Mathematics
             public double X => _x;
             #endregion
             #region STATIC MEMBERS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Node Parse(string s)
             {
-                switch(s)
+                s = s.Replace(" ", string.Empty).Replace(".", ",");
+                switch (s)
                 {
                     case "": return NaN;
                     case "{0}": return Zero;
@@ -72,6 +75,7 @@ namespace Mathematics
                 }                
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool TryParse(string s, out Node obj)
             {
                 obj = new Node();
@@ -86,16 +90,19 @@ namespace Mathematics
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsInfinity(Node node)
             {
                 return double.IsInfinity(node._x);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsNaN(Node node)
             {
                 return double.IsNaN(node._x);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool IsZero(Node node)
             {
                 return node._x == 0.0;
@@ -107,71 +114,91 @@ namespace Mathematics
 
             public static Node Zero => new Node();
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool operator==(Node a, Node b)
             {
                 return a.Equals(b);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool operator!=(Node a, Node b)
             {
                 return !a.Equals(b);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool operator>(Node a, Node b)
             {
                 return a._x > b._x;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool operator<(Node a, Node b)
             {
                 return a._x < b._x;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool operator>=(Node a, Node b)
             {
                 return a._x >= b._x;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool operator<=(Node a, Node b)
             {
                 return a._x <= b._x;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Node operator++(Node a)
             {
                 return new Node(a._x + 1);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Node operator--(Node a)
             {
                 return new Node(a._x - 1);
             }
 
-            public static implicit operator Node(double x)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator Node(double x)
             {
                 return new Node(x);
             }
 
-            public static explicit operator double(Node a)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator double(Node n)
             {
-                return a._x;
+                return n._x;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator Node(string s)
+            {
+                return Parse(s);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Equals(Node a, Node b)
             {
                 return a.Equals(b);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Node Increment(Node a)
             {
                 return new Node(a._x + 1);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Node Decrement(Node a)
             {
                 return new Node(a._x - 1);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool Compare(Node a, Node b)
             {
                 return a > b;
@@ -179,32 +206,26 @@ namespace Mathematics
             #endregion
         }
 
-        /*[StructLayout(LayoutKind.Auto), Serializable]
-        public struct Node:IEquatable<Node>, IEnumerable<double>
+        public sealed class SortedNodes:IEnumerable<Node>, IList<Node>, ICollection<Node>, IEquatable<SortedNodes>, IEnumerable, IList, ICollection
         {
-            #region FIELDS
-            private readonly double _x;
-            private readonly double _y;
+            #region FIELD
+            private List<Node> _nodes;
+            private readonly Func<Node, double> _keySelector = (node) => node.X;
             #endregion
             #region CONSTRUCTORS
-            public Node(double x=0, double y=0)
-            {
-                _x = x;
-                _y = y;
-            }
-
-            public Node(Node obj):this(obj._x, obj._y) { }
+            public SortedNodes() => _nodes = new List<Node>();
+            public SortedNodes(IEnumerable<Node> nodes) => _nodes = SortedNodesMethod(nodes);
+            public SortedNodes(int capacity) => _nodes = new List<Node>(capacity);
             #endregion
             #region METHODS
-            public bool Equals(Node other)
+            private List<Node> SortedNodesMethod(IEnumerable<Node> nodes)
             {
-                return (_x == other._x) && (_y == other._y);
+                return nodes.OrderBy(_keySelector).ToList();
             }
 
-            public IEnumerator<double> GetEnumerator()
+            public IEnumerator<Node> GetEnumerator()
             {
-                yield return _x;
-                yield return _y;
+                return _nodes.GetEnumerator();
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -212,159 +233,24 @@ namespace Mathematics
                 return GetEnumerator();
             }
 
-            public override int GetHashCode()
+            public int IndexOf(Node item)
             {
-                return _x.GetHashCode() ^ _y.GetHashCode();
+                return _nodes.IndexOf(item);
             }
 
-            public override bool Equals(object obj)
+            public void Insert(int index, Node item)
             {
-                return (obj is Node) ? Equals((Node)obj) : false;
+                _nodes.Insert(index, item);
+                _nodes = SortedNodesMethod(_nodes);
             }
 
-            public override string ToString()
+            public void RemoveAt(int index)
             {
-                return $"[X={_x};\tY={_y}]";
+                _nodes.RemoveAt(index);
             }
-            #endregion
-            #region PROPERTIES
-            public double X => _x;
-            public double Y => _y;
-            #endregion
-            #region STATIC MEMBERS
-            public static bool IsInfinity(Node node)
-            {
-                return double.IsInfinity(node.X) || double.IsInfinity(node.Y);
-            }
-
-            public static bool IsXPossitiveInfinity(Node node)
-            {
-                return double.IsPositiveInfinity(node._x) && node._y == 0.0;
-            }
-
-            public static bool IsYPossitiveInfinity(Node node)
-            {
-                return double.IsPositiveInfinity(node._y) && node._x == 0.0;
-            }
-
-            public static bool IsXNegativeInfinity(Node node)
-            {
-                return double.IsNegativeInfinity(node._x) && node._y == 0.0;
-            }
-
-            public static bool IsYNegativeInfinity(Node node)
-            {
-                return double.IsNegativeInfinity(node._y) && node._x == 0.0;
-            }
-
-            public static bool IsNaN(Node node)
-            {
-                return double.IsNaN(node._x) || double.IsNaN(node._y);
-            }
-
-            public static bool IsZero(Node node)
-            {
-                return node._x == 0.0 && node._y == 0.0;
-            }
-
-            public static Node Zero => new Node();
-
-            public static Node Infinity => new Node(double.PositiveInfinity, double.PositiveInfinity);
-
-            public static Node NaN => new Node(double.NaN, double.NaN);
-
-            public static Node Parse(string s)
-            {
-                s = s.Replace(" ", string.Empty).Replace(".", ",");
-
-                switch (s)
-                {
-                    case "": return NaN;
-                    case "{0}": return Zero;
-                    case "{∞}": return Infinity;
-                    case "{¿}": return NaN;
-                    default:
-                        {
-                            string pattern = @"(([+-]?[\d]+([.,][\d]+)?);|([+-]?[\d]+([.,][\d]+)?))";
-                            string[] coords = new string[2];
-                            int i = 0;
-
-                            foreach (Match m in Regex.Matches(s, pattern, RegexOptions.Compiled))
-                            {
-                                if (i > 1) { break; }
-                                coords[i++] = m.Value;
-                            }
-
-                            coords[0] = Regex.Replace(coords[0], ";", string.Empty, RegexOptions.Compiled);
-
-                            if ((string.IsNullOrEmpty(coords[0])) && (!string.IsNullOrEmpty(coords[1]))) { return new Node(0.0, double.Parse(coords[1])); }
-                            else if (string.IsNullOrEmpty(coords[1]) && (!string.IsNullOrEmpty(coords[0]))) { return new Node(double.Parse(coords[0]), 0.0); }
-                            return coords.Select(str => double.Parse(str)).ToArray<double>().ToNode();
-                        }
-                }
-            }
-
-            public static bool TryParse(string s, out Node node)
-            {
-                node = new Node();
-                try
-                {
-                    node = Parse(s);
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-
-            public static implicit operator Node(Point2D obj)
-            {
-                return new Node(obj.X, obj.Y);
-            }
-            
-            public static implicit operator Node(string s)
-            {
-                return Node.Parse(s);
-            }
-            #endregion
-        }
-
-        [StructLayout(LayoutKind.Auto), Serializable]
-        public class SortedNodes:IEnumerable<Node>, IList<Node>, ICollection<Node>, IEquatable<SortedNodes>
-        {
-            #region FIELDS
-            private List<Node> _nodes;
-            private Func<Node, double> _keySelector = (node) => node.X;
-            #endregion
-            #region CONSTRUCTORS
-            public SortedNodes() => _nodes = new List<Node>();
-            public SortedNodes(IEnumerable<Node> nodes) => _nodes = SortedNodesMethod(nodes);
-            public SortedNodes(int capacity) => _nodes = new List<Node>(capacity);
-            #endregion;
-            #region METHODS
-            private List<Node> SortedNodesMethod(IEnumerable<Node> nodes)
-            {
-                return nodes.OrderBy(_keySelector).ToList();
-            }
-
-            public Node this[int index]
-            {
-                get => _nodes[index];
-                set
-                {
-                    _nodes[index] = value;
-                    _nodes = SortedNodesMethod(_nodes);
-                }
-            }
-
-            public int Count => _nodes.Count;
-
-            public bool IsReadOnly => false;
 
             public void Add(Node item)
             {
-
                 if(!_nodes.Contains(item))
                 {
                     _nodes.Add(item);
@@ -395,39 +281,182 @@ namespace Mathematics
                 _nodes.CopyTo(array, arrayIndex);
             }
 
-            public IEnumerator<Node> GetEnumerator()
-            {
-                return _nodes.GetEnumerator();
-            }
-
-            public int IndexOf(Node item)
-            {
-                return _nodes.IndexOf(item);
-            }
-
-            public void Insert(int index, Node item)
-            {
-                _nodes.Insert(index, item);
-            }
-
             public bool Remove(Node item)
             {
                 return _nodes.Remove(item);
             }
 
-            public void RemoveAt(int index)
+            int IList.Add(object value)
+            {
+                bool flag = (value is Node);
+
+                if(flag)
+                {
+                    _nodes.Add((Node)value);
+                    return _nodes.Count - 1;
+                }
+                else
+                {
+                    return -1;
+                }
+            }
+
+            bool IList.Contains(object value)
+            {
+                return (value is Node) ? _nodes.Contains((Node)value) : false;
+            }
+
+            void IList.Clear()
+            {
+                _nodes.Clear();
+            }
+
+            int IList.IndexOf(object value)
+            {
+                bool flag = (value is Node);
+
+                if (!flag) { return -1; }
+
+                return _nodes.IndexOf((Node)value);
+            }
+
+            void IList.Insert(int index, object value)
+            {
+                _nodes.Insert(index, (Node)value);
+            }
+
+            void IList.Remove(object value)
+            {
+                _nodes.Remove((Node)value);
+            }
+
+            void IList.RemoveAt(int index)
             {
                 _nodes.RemoveAt(index);
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
+            void ICollection.CopyTo(Array array, int index)
             {
-                return GetEnumerator();
+                _nodes.CopyTo((Node[])array, index);
             }
 
-            public Node[] ToArray()
+            public int Count => _nodes.Count;
+
+            public bool IsReadOnly => false;
+
+            bool IList.IsReadOnly => false;
+
+            bool IList.IsFixedSize => false;
+
+            int ICollection.Count => _nodes.Count;
+
+            object ICollection.SyncRoot => false;
+
+            bool ICollection.IsSynchronized => false;
+
+            object IList.this[int index]
+            {
+                get => _nodes[index];
+                set
+                {
+                    Node oldValue = _nodes[index];
+                    bool flag = (value is Node);
+
+                    if (!flag) { _nodes[index] = oldValue; return; }
+
+                    _nodes[index] = (Node)value;
+                    _nodes = SortedNodesMethod(_nodes);
+                }
+            }
+            public Node this[int index]
+            {
+                get => _nodes[index];
+                set
+                {
+                    _nodes[index] = value;
+                    _nodes = SortedNodesMethod(_nodes);
+                }
+            }
+
+            public bool Equals(SortedNodes other)
+            {
+                IStructuralEquatable se = _nodes.ToArray();
+
+                return se.Equals(other._nodes.ToArray(), StructuralComparisons.StructuralEqualityComparer);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is SortedNodes) ? Equals((SortedNodes)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                int hash = 17;
+
+                foreach(var el in _nodes)
+                {
+                    hash *= (hash * 31) + el.GetHashCode();
+                }
+
+                return hash;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder builder = new StringBuilder();
+
+                foreach(var el in _nodes)
+                {
+                    builder.Append(el.X.ToString() + "\n");
+                }
+
+                return builder.ToString();
+            }
+
+            public Node[] ToArraySortedNodes()
             {
                 return _nodes.ToArray();
+            }
+
+            public void Reverse(int startIndex, int count)
+            {
+                _nodes.Reverse(startIndex, count);
+            }
+
+            public void Reverse()
+            {
+                _nodes.Reverse();
+            }
+
+            public int RemoveAll(Predicate<Node> match)
+            {
+                return _nodes.RemoveAll(match);
+            }
+
+            public int LastIndexOf(Node node, int index, int count)
+            {
+                return _nodes.LastIndexOf(node, index, count);
+            }
+
+            public int LastIndexOf(Node node, int index)
+            {
+                return _nodes.LastIndexOf(node, index);
+            }
+
+            public int LastIndexOf(Node node)
+            {
+                return _nodes.LastIndexOf(node);
+            }
+
+            public int IndexOf(Node node, int index, int count)
+            {
+                return _nodes.IndexOf(node, index, count);
+            }
+
+            public int IndexOf(Node node, int index)
+            {
+                return _nodes.IndexOf(node, index);
             }
 
             public void ForEach(Action<Node> action)
@@ -484,50 +513,6 @@ namespace Mathematics
             {
                 return _nodes.Exists(match);
             }
-
-            public bool Equals(SortedNodes other)
-            {
-                Node[] nodes = SortedNodesMethod(other._nodes).ToArray();
-
-                IStructuralEquatable equatable = _nodes.ToArray();
-
-                return equatable.Equals(nodes, StructuralComparisons.StructuralEqualityComparer);
-            }
-
-            public override bool Equals(object obj)
-            {
-                return (obj is SortedNodes) ? Equals((SortedNodes)obj): false;
-            }
-
-            public override int GetHashCode()
-            {
-                int hash = 17;
-
-                foreach(var el in _nodes)
-                {
-                    hash *= (hash * 31) + el.GetHashCode();
-                }
-
-                return hash;
-            }
-
-            public override string ToString()
-            {
-                StringBuilder builder = new StringBuilder();
-
-                foreach(var el in _nodes)
-                {
-                    builder.Append(el.ToString() + "\n");
-                }
-
-                return builder.ToString();
-            }
-            #endregion
-            #region STATIC MEMBERS
-            public static implicit operator SortedNodes(Node[] nodes)
-            {
-                return new SortedNodes(nodes);
-            }
             #endregion
         }
 
@@ -536,7 +521,7 @@ namespace Mathematics
             NewtonPolynomial, LagrangPolynomial, HermitPolynomial, SplineInterpolation 
         }
 
-        public class Interpolation
+        /*public class Interpolation
         {
             #region FIELDS
             private SortedNodes _nodes;
@@ -562,25 +547,6 @@ namespace Mathematics
 
             public Interpolation(IEnumerable<Point2D> nodes, Function baseFunction):this(TypeInterpolation.NewtonPolynomial, nodes, baseFunction) { }
             #endregion
-        }
-        internal static class Extensions
-        {
-            public static Node ToNode(this double[] array)
-            {
-                try
-                {
-                    return new Node(array[0], array[1]);
-                }
-                catch(IndexOutOfRangeException)
-                {
-                    return new Node();
-                }
-            }
-
-            public static SortedNodes ToSortedNodes(this IEnumerable<Point2D> nodes)
-            {
-                return new SortedNodes(nodes.Select(p => new Node(p)));
-            }
         }*/
     }
 }
