@@ -12,7 +12,174 @@ namespace Mathematics
 {
     namespace Approximation
     {
-        [StructLayout(LayoutKind.Auto), Serializable]
+        [StructLayout(LayoutKind.Auto),Serializable]
+        public struct Node:IEquatable<Node>,IComparable<Node>,IComparable
+        {
+            #region FIELD
+            private readonly double _x;
+            #endregion
+            #region CONSTRUCTORS
+            public Node(double x) => _x = x;
+            public Node(Node obj) : this(obj._x) { }
+            #endregion
+            #region METHODS
+            public bool Equals(Node other)
+            {
+                return _x.Equals(other._x);
+            }
+
+            public int CompareTo(Node other)
+            {
+                return _x.CompareTo(other._x);
+            }
+
+            int IComparable.CompareTo(object obj)
+            {
+                return (obj is Node) ? CompareTo((Node)obj) : -1;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is Node) ? Equals((Node)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                return _x.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                return _x.ToString();
+            }
+            #endregion
+            #region PROPERTI
+            public double X => _x;
+            #endregion
+            #region STATIC MEMBERS
+            public static Node Parse(string s)
+            {
+                switch(s)
+                {
+                    case "": return NaN;
+                    case "{0}": return Zero;
+                    case "{∞}": return Infinity;
+                    case "{¿}": return NaN;
+                    default:
+                        {
+                            return new Node(double.Parse(s));
+                        }
+                }                
+            }
+
+            public static bool TryParse(string s, out Node obj)
+            {
+                obj = new Node();
+                try
+                {
+                    obj = Parse(s);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+
+            public static bool IsInfinity(Node node)
+            {
+                return double.IsInfinity(node._x);
+            }
+
+            public static bool IsNaN(Node node)
+            {
+                return double.IsNaN(node._x);
+            }
+
+            public static bool IsZero(Node node)
+            {
+                return node._x == 0.0;
+            }
+
+            public static Node NaN => new Node(double.NaN);
+
+            public static Node Infinity => new Node(double.PositiveInfinity);
+
+            public static Node Zero => new Node();
+
+            public static bool operator==(Node a, Node b)
+            {
+                return a.Equals(b);
+            }
+
+            public static bool operator!=(Node a, Node b)
+            {
+                return !a.Equals(b);
+            }
+
+            public static bool operator>(Node a, Node b)
+            {
+                return a._x > b._x;
+            }
+
+            public static bool operator<(Node a, Node b)
+            {
+                return a._x < b._x;
+            }
+
+            public static bool operator>=(Node a, Node b)
+            {
+                return a._x >= b._x;
+            }
+
+            public static bool operator<=(Node a, Node b)
+            {
+                return a._x <= b._x;
+            }
+
+            public static Node operator++(Node a)
+            {
+                return new Node(a._x + 1);
+            }
+
+            public static Node operator--(Node a)
+            {
+                return new Node(a._x - 1);
+            }
+
+            public static implicit operator Node(double x)
+            {
+                return new Node(x);
+            }
+
+            public static explicit operator double(Node a)
+            {
+                return a._x;
+            }
+
+            public static bool Equals(Node a, Node b)
+            {
+                return a.Equals(b);
+            }
+
+            public static Node Increment(Node a)
+            {
+                return new Node(a._x + 1);
+            }
+
+            public static Node Decrement(Node a)
+            {
+                return new Node(a._x - 1);
+            }
+
+            public static bool Compare(Node a, Node b)
+            {
+                return a > b;
+            }
+            #endregion
+        }
+
+        /*[StructLayout(LayoutKind.Auto), Serializable]
         public struct Node:IEquatable<Node>, IEnumerable<double>
         {
             #region FIELDS
@@ -414,6 +581,6 @@ namespace Mathematics
             {
                 return new SortedNodes(nodes.Select(p => new Node(p)));
             }
-        }
+        }*/
     }
 }
