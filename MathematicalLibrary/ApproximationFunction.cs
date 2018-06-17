@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Collections;
 using Mathematics.Objects;
-using System.Text.RegularExpressions;
 
 namespace Mathematics
 {
@@ -208,7 +207,7 @@ namespace Mathematics
 
         public sealed class SortedNodes:IEnumerable<Node>, IList<Node>, ICollection<Node>, IEquatable<SortedNodes>, IEnumerable, IList, ICollection
         {
-            #region FIELD
+            #region FIELDS
             private List<Node> _nodes;
             private readonly Func<Node, double> _keySelector = (node) => node.X;
             #endregion
@@ -338,45 +337,7 @@ namespace Mathematics
             void ICollection.CopyTo(Array array, int index)
             {
                 _nodes.CopyTo((Node[])array, index);
-            }
-
-            public int Count => _nodes.Count;
-
-            public bool IsReadOnly => false;
-
-            bool IList.IsReadOnly => false;
-
-            bool IList.IsFixedSize => false;
-
-            int ICollection.Count => _nodes.Count;
-
-            object ICollection.SyncRoot => false;
-
-            bool ICollection.IsSynchronized => false;
-
-            object IList.this[int index]
-            {
-                get => _nodes[index];
-                set
-                {
-                    Node oldValue = _nodes[index];
-                    bool flag = (value is Node);
-
-                    if (!flag) { _nodes[index] = oldValue; return; }
-
-                    _nodes[index] = (Node)value;
-                    _nodes = SortedNodesMethod(_nodes);
-                }
-            }
-            public Node this[int index]
-            {
-                get => _nodes[index];
-                set
-                {
-                    _nodes[index] = value;
-                    _nodes = SortedNodesMethod(_nodes);
-                }
-            }
+            }            
 
             public bool Equals(SortedNodes other)
             {
@@ -514,6 +475,92 @@ namespace Mathematics
                 return _nodes.Exists(match);
             }
             #endregion
+            #region PROPERTIES
+            public int Count => _nodes.Count;
+
+            public int Capacity => _nodes.Capacity;
+
+            public bool IsReadOnly => false;
+
+            bool IList.IsReadOnly => false;
+
+            bool IList.IsFixedSize => false;
+
+            int ICollection.Count => _nodes.Count;
+
+            object ICollection.SyncRoot => false;
+
+            bool ICollection.IsSynchronized => false;
+
+            object IList.this[int index]
+            {
+                get => _nodes[index];
+                set
+                {
+                    Node oldValue = _nodes[index];
+                    bool flag = (value is Node);
+
+                    if (!flag) { _nodes[index] = oldValue; return; }
+
+                    _nodes[index] = (Node)value;
+                    _nodes = SortedNodesMethod(_nodes);
+                }
+            }
+
+            [IndexerName("Node")]
+            public Node this[int index]
+            {
+                get => _nodes[index];
+                set
+                {
+                    _nodes[index] = value;
+                    _nodes = SortedNodesMethod(_nodes);
+                }
+            }
+            #endregion
+            #region STATIC MEMBERS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator==(SortedNodes a, SortedNodes b)
+            {
+                return a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator!=(SortedNodes a, SortedNodes b)
+            {
+                return !a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator SortedNodes(List<Node> nodes)
+            {
+                return new SortedNodes(nodes);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static implicit operator SortedNodes(Node[] nodes)
+            {
+                return new SortedNodes(nodes);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator List<Node>(SortedNodes nodes)
+            {
+                return nodes._nodes;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static explicit operator Node[](SortedNodes nodes)
+            {
+                return nodes._nodes.ToArray();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Equals(SortedNodes a, SortedNodes b)
+            {
+                return a.Equals(b);
+            }
+            #endregion
         }
 
         public enum TypeInterpolation
@@ -521,32 +568,129 @@ namespace Mathematics
             NewtonPolynomial, LagrangPolynomial, HermitPolynomial, SplineInterpolation 
         }
 
-        /*public class Interpolation
+        public sealed class TypeInterpolationChangedEventArgs:EventArgs
+        {
+            #region FIELDS
+            private readonly TypeInterpolation _oldType;
+            private readonly TypeInterpolation _newType;
+            #endregion
+            #region CONSTRUCTOR
+            public TypeInterpolationChangedEventArgs(TypeInterpolation oldType, TypeInterpolation newType)
+            {
+                _oldType = oldType;
+                _newType = newType;
+            }
+            #endregion
+            #region PROPERTIES
+            public TypeInterpolation OldType => _oldType;
+            public TypeInterpolation NewType => _newType;
+            #endregion
+        }
+
+        public sealed class Interpolation
         {
             #region FIELDS
             private SortedNodes _nodes;
             private TypeInterpolation _type;
             private Function _baseFunction;
+            private Point2D[] _basePoints;
             #endregion
-            #region Constructors
-            public Interpolation(TypeInterpolation type, IEnumerable<Node> nodes, Function baseFunction)
+            #region CONSTRUCTORS
+            public Interpolation(TypeInterpolation type, SortedNodes nodes, Function baseFunction)
             {
                 _type = type;
-                _nodes = (SortedNodes)nodes;
+                _nodes = nodes;
                 _baseFunction = baseFunction;
+                _basePoints = GetBasePoints(_nodes, _baseFunction);
             }
 
-            public Interpolation(IEnumerable<Node> nodes, Function baseFunction):this(TypeInterpolation.NewtonPolynomial, nodes, baseFunction) { }
-
-            public Interpolation(TypeInterpolation type, IEnumerable<Point2D> nodes, Function baseFunction)
+            public Interpolation(TypeInterpolation type, double startPoints, double endPoints, double step, Function baseFunction)
             {
                 _type = type;
-                _nodes = nodes.ToSortedNodes();
                 _baseFunction = baseFunction;
+                _basePoints = GetBasePoints(startPoints, endPoints, step, _baseFunction);
+                _nodes = _basePoints.Select(p => new Node(p.X)).ToList();
             }
 
-            public Interpolation(IEnumerable<Point2D> nodes, Function baseFunction):this(TypeInterpolation.NewtonPolynomial, nodes, baseFunction) { }
+            public Interpolation(TypeInterpolation type, double startPoints, double endPoints, int countPoints, Function baseFunction)
+            {
+                _type = type;
+                _baseFunction = baseFunction;
+                _basePoints = GetBasePoints(startPoints, endPoints, countPoints, _baseFunction);
+                _nodes = _basePoints.Select(p => new Node(p.X)).ToList();
+            }
+
+            public Interpolation(TypeInterpolation type, IEnumerable<Point2D> points, Function baseFunction)
+            {
+                _type = type;
+                _baseFunction = baseFunction;
+                _basePoints = points.ToArray();
+                _nodes = _basePoints.Select(p => new Node(p.X)).ToList();
+            }
             #endregion
-        }*/
+            #region METHODS
+            private Point2D[] GetBasePoints(SortedNodes nodes, Function function)
+            {
+                Point2D[] points = new Point2D[nodes.Count];
+
+                for(int i=0; i<points.Length; i++)
+                {
+                    points[i] = new Point2D(nodes[i], function.Invoke(nodes[i]));
+                }
+
+                return points;
+            }
+
+            private Point2D[] GetBasePoints(double startPoints, double endPoints, double step, Function f)
+            {
+                List<Point2D> points = new List<Point2D>();
+
+                for(double x=startPoints; x<=endPoints; x+=step)
+                {
+                    points.Add(new Point2D(x, f.Invoke(x)));
+                }
+
+                return points.ToArray();
+            }
+
+            private Point2D[] GetBasePoints(double startPoints, double endPoints, int countPoints, Function f)
+            {
+                double step = (endPoints - startPoints) / (countPoints - 1);
+                List<Point2D> points = new List<Point2D>(countPoints);
+
+                for(double x=startPoints; x<=endPoints; x+=step)
+                {
+                    points.Add(new Point2D(x, f.Invoke(x)));
+                }
+
+                return points.ToArray();
+            }
+
+            private void OnTypeInterpolationChanged(TypeInterpolationChangedEventArgs e)
+            {
+                TypeInterpolationChanged?.Invoke(this, e);
+            }
+            #endregion
+            #region PROPERTIES
+            public TypeInterpolation InteprolationType
+            {
+                get => _type;
+                set
+                {
+                    TypeInterpolation oldType = InteprolationType;
+                    if (oldType == value) { return; }
+
+                    _type = value;
+                    OnTypeInterpolationChanged(new TypeInterpolationChangedEventArgs(oldType, value));
+                }
+            }
+            public Function InterpolationFunction { get => _baseFunction; set => _baseFunction = value; }
+            public SortedNodes Nodes { get => _nodes; set => _nodes = value; }
+            public Point2D[] InterpolationPoints { get => _basePoints; set => _basePoints = value; }
+            #endregion
+            #region EVENTS
+            public event EventHandler<TypeInterpolationChangedEventArgs> TypeInterpolationChanged;
+            #endregion
+        }
     }
 }
