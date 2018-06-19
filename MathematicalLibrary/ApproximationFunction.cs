@@ -205,6 +205,7 @@ namespace Mathematics
             #endregion
         }
 
+        [Serializable]
         public sealed class SortedNodes:IEnumerable<Node>, IList<Node>, ICollection<Node>, IEquatable<SortedNodes>, IEnumerable, IList, ICollection
         {
             #region FIELDS
@@ -565,7 +566,7 @@ namespace Mathematics
 
         public enum TypeInterpolation
         {
-            NewtonPolynomial, LagrangPolynomial, HermitPolynomial, SplineInterpolation 
+            NewtonPolynomial, LagrangePolynomial, HermitPolynomial, SplineInterpolation 
         }
 
         public sealed class TypeInterpolationChangedEventArgs:EventArgs
@@ -587,12 +588,13 @@ namespace Mathematics
             #endregion
         }
 
-        public sealed class Interpolation
+        [Serializable]
+        public sealed class Interpolation:IEquatable<Interpolation>
         {
             #region FIELDS
             private SortedNodes _nodes;
             private TypeInterpolation _type;
-            private Function _baseFunction;
+            private readonly Function _baseFunction;
             private Point2D[] _basePoints;
             #endregion
             #region CONSTRUCTORS
@@ -670,6 +672,76 @@ namespace Mathematics
             {
                 TypeInterpolationChanged?.Invoke(this, e);
             }
+
+            public bool Equals(Interpolation other)
+            {
+                return _nodes.Equals(other.Nodes) && _baseFunction.Equals(other._baseFunction) && _type == other._type;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is Interpolation) ? Equals((Interpolation)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                return _nodes.GetHashCode() ^ _baseFunction.GetHashCode() ^ _type.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                return GetType().Name;
+            }
+
+            private double Lagrange(double x)
+            {
+                double sum = 0.0;
+                double p;
+
+                for(int i=0; i<_basePoints.Length; i++)
+                {
+                    p = 1.0;
+                    for(int j=0; j<_basePoints.Length; j++)
+                    {
+                        if(j!=i)
+                        {
+                            p *= (x - _basePoints[j].X) / (_basePoints[i].X - _basePoints[j].X);
+                        }
+                    }
+                    sum += _basePoints[i].Y * p;
+                }
+
+                return sum;
+            }
+
+            private double Newton(double x)
+            {
+                return 0.0;
+            }
+
+            private double Hermit(double x)
+            {
+                return 0.0;
+            }
+
+            private double Spline(double x)
+            {
+                return 0.0;
+            }
+
+            public double Calculate(Node node)
+            {
+                double res = 0.0;
+                switch(_type)
+                {
+                    case TypeInterpolation.NewtonPolynomial: res = Newton(node.X); break;
+                    case TypeInterpolation.LagrangePolynomial: res = Lagrange(node.X); break;
+                    case TypeInterpolation.HermitPolynomial: res = Hermit(node.X); break;
+                    case TypeInterpolation.SplineInterpolation: res = Spline(node.X); break;
+                }
+
+                return res;
+            }
             #endregion
             #region PROPERTIES
             public TypeInterpolation InteprolationType
@@ -684,12 +756,31 @@ namespace Mathematics
                     OnTypeInterpolationChanged(new TypeInterpolationChangedEventArgs(oldType, value));
                 }
             }
-            public Function InterpolationFunction { get => _baseFunction; set => _baseFunction = value; }
+            public Function InterpolationFunction { get => _baseFunction;}
             public SortedNodes Nodes { get => _nodes; set => _nodes = value; }
             public Point2D[] InterpolationPoints { get => _basePoints; set => _basePoints = value; }
             #endregion
             #region EVENTS
             public event EventHandler<TypeInterpolationChangedEventArgs> TypeInterpolationChanged;
+            #endregion
+            #region STATIC MEMBERS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator==(Interpolation a, Interpolation b)
+            {
+                return a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator!=(Interpolation a, Interpolation b)
+            {
+                return !a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Equals(Interpolation a, Interpolation b)
+            {
+                return a.Equals(b);
+            }
             #endregion
         }
     }
