@@ -714,9 +714,54 @@ namespace Mathematics
                 return sum;
             }
 
+            private double GetDividedDifference(int numberDifference)
+            {
+                double sum = 0.0, p;
+
+                for(int i=0; i<=numberDifference; i++)
+                {
+                    p = 1.0;
+                    for(int j=0; j<=numberDifference; j++)
+                    {
+                        if(i!=j)
+                        {
+                            p *= (_basePoints[i].X - _basePoints[j].X);
+                        }
+                    }
+                    sum += (_basePoints[i].Y / p);
+                }
+
+                return sum;
+            }
+
+            private List<double> GetDividedDifferences()
+            {
+                List<double> dividedDifferences = new List<double>();
+
+                for(int i=1; i<_basePoints.Length; i++)
+                {
+                    dividedDifferences.Add(GetDividedDifference(i));
+                }
+
+                return dividedDifferences;
+            }
+
             private double Newton(double x)
             {
-                return 0.0;
+                double res = _basePoints[0].Y, p, sum = 0.0;
+                List<double> differences = GetDividedDifferences();
+
+                for(int i=1; i<=differences.Count; i++)
+                {
+                    p = 1.0;
+                    for(int j=0; j<=i-1; j++)
+                    {
+                        p *= (x - _basePoints[j].X);
+                    }
+                    sum += (differences[i - 1] * p);
+                }
+
+                return res + sum;
             }
 
             private double Hermit(double x)
@@ -738,6 +783,7 @@ namespace Mathematics
                     case TypeInterpolation.LagrangePolynomial: res = Lagrange(node.X); break;
                     case TypeInterpolation.HermitPolynomial: res = Hermit(node.X); break;
                     case TypeInterpolation.SplineInterpolation: res = Spline(node.X); break;
+                    default: throw new ArgumentException();
                 }
 
                 return res;
