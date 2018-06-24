@@ -4255,7 +4255,18 @@ namespace Mathematics
 
             public bool Equals(Function other)
             {
-                return GetHashCode() == other.GetHashCode();
+                if(_expression == null && other._expression == null)
+                {
+                    return true;
+                }
+                else if(_expression != null && other._expression != null)
+                {
+                    return GetHashCode() == other.GetHashCode();
+                }
+                else
+                {
+                    return false;
+                }
             }
 
             public override bool Equals(object obj)
@@ -4265,6 +4276,11 @@ namespace Mathematics
 
             public override int GetHashCode()
             {
+                if(_expression==null)
+                {
+                    return 0;
+                }
+
                 int hash = 17;
                 double a = -0.5, b = 0.5, h = (b - a) / 6.0;
 
@@ -4439,7 +4455,7 @@ namespace Mathematics
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static bool operator!=(Function f1, Function f2)
             {
-                return !f1.Equals(f2);
+                return !(f1 == f2);
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

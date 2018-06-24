@@ -589,43 +589,38 @@ namespace Mathematics
         }
 
         [Serializable]
-        public sealed class Interpolation:IEquatable<Interpolation>
+        public abstract class BaseApproximation:IEquatable<BaseApproximation>
         {
             #region FIELDS
             private SortedNodes _nodes;
-            private TypeInterpolation _type;
             private readonly Function _baseFunction;
             private Point2D[] _basePoints;
             #endregion
             #region CONSTRUCTORS
-            public Interpolation(TypeInterpolation type, SortedNodes nodes, Function baseFunction)
+            public BaseApproximation(SortedNodes nodes, Function baseFunction)
             {
-                _type = type;
                 _nodes = nodes;
                 _baseFunction = baseFunction;
                 _basePoints = GetBasePoints(_nodes, _baseFunction);
             }
 
-            public Interpolation(TypeInterpolation type, double startPoints, double endPoints, double step, Function baseFunction)
+            public BaseApproximation(double startPoint, double endPoint, double step, Function baseFunction)
             {
-                _type = type;
                 _baseFunction = baseFunction;
-                _basePoints = GetBasePoints(startPoints, endPoints, step, _baseFunction);
+                _basePoints = GetBasePoints(startPoint, endPoint, step, _baseFunction);
                 _nodes = _basePoints.Select(p => new Node(p.X)).ToList();
             }
 
-            public Interpolation(TypeInterpolation type, double startPoints, double endPoints, int countPoints, Function baseFunction)
+            public BaseApproximation(double startPoints, double endPoints, int countPoints, Function baseFunction)
             {
-                _type = type;
                 _baseFunction = baseFunction;
                 _basePoints = GetBasePoints(startPoints, endPoints, countPoints, _baseFunction);
                 _nodes = _basePoints.Select(p => new Node(p.X)).ToList();
             }
 
-            public Interpolation(TypeInterpolation type, IEnumerable<Point2D> points, Function baseFunction)
+            public BaseApproximation(IEnumerable<Point2D> points)
             {
-                _type = type;
-                _baseFunction = baseFunction;
+                _baseFunction = new Function();
                 _basePoints = points.ToArray();
                 _nodes = _basePoints.Select(p => new Node(p.X)).ToList();
             }
@@ -635,7 +630,7 @@ namespace Mathematics
             {
                 Point2D[] points = new Point2D[nodes.Count];
 
-                for(int i=0; i<points.Length; i++)
+                for (int i = 0; i < points.Length; i++)
                 {
                     points[i] = new Point2D(nodes[i], function.Invoke(nodes[i]));
                 }
@@ -647,7 +642,7 @@ namespace Mathematics
             {
                 List<Point2D> points = new List<Point2D>();
 
-                for(double x=startPoints; x<=endPoints; x+=step)
+                for (double x = startPoints; x <= endPoints; x += step)
                 {
                     points.Add(new Point2D(x, f.Invoke(x)));
                 }
@@ -660,7 +655,7 @@ namespace Mathematics
                 double step = (endPoints - startPoints) / (countPoints - 1);
                 List<Point2D> points = new List<Point2D>(countPoints);
 
-                for(double x=startPoints; x<=endPoints; x+=step)
+                for (double x = startPoints; x <= endPoints; x += step)
                 {
                     points.Add(new Point2D(x, f.Invoke(x)));
                 }
@@ -668,14 +663,94 @@ namespace Mathematics
                 return points.ToArray();
             }
 
-            private void OnTypeInterpolationChanged(TypeInterpolationChangedEventArgs e)
+            public abstract double Calculate(Node node);
+
+            public bool Equals(BaseApproximation other)
             {
-                TypeInterpolationChanged?.Invoke(this, e);
+                return _baseFunction.Equals(other._baseFunction) && _nodes.Equals(other._nodes);
             }
 
+            public override bool Equals(object obj)
+            {
+                return (obj is BaseApproximation) ? Equals((BaseApproximation)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                int n = _baseFunction?.GetHashCode() ?? 1;
+                return _nodes.GetHashCode() ^ n.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                string nameFunction = string.Empty;
+                StringBuilder builder = new StringBuilder();
+                builder.Append("Number of nodes:" + "\t" + _nodes.Count.ToString());
+                builder.AppendLine();
+
+                nameFunction = _baseFunction.Expression?.ToString() ?? "Undefined";
+                builder.Append("Function name:" + "\t" + nameFunction);
+
+                return builder.ToString();
+            }
+            #endregion
+            #region PROPERTIES
+            public Function InterpolationFunction { get => _baseFunction; }
+            public SortedNodes Nodes { get => _nodes; set => _nodes = value; }
+            public Point2D[] InterpolationPoints { get => _basePoints; set => _basePoints = value; }
+            #endregion
+            #region STATIC MEMBERS
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator==(BaseApproximation a, BaseApproximation b)
+            {
+                return a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator!=(BaseApproximation a, BaseApproximation b)
+            {
+                return !a.Equals(b);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool Equals(BaseApproximation a, BaseApproximation b)
+            {
+                return a.Equals(b);
+            }
+            #endregion
+        }
+
+        [Serializable]
+        public sealed class Interpolation:BaseApproximation, IEquatable<Interpolation>
+        {
+            #region FIELD
+            private TypeInterpolation _type;
+            #endregion
+            #region CONSTRUCTORS
+            public Interpolation(TypeInterpolation type, SortedNodes nodes, Function baseFunction):base(nodes,baseFunction)
+            {
+                _type = type;
+            }
+
+            public Interpolation(TypeInterpolation type, double startPoint, double endPoints, double step, Function baseFunction):base(startPoint, endPoints, step, baseFunction)
+            {
+                _type = type;
+            }
+
+            public Interpolation(TypeInterpolation type, double startPoint, double endPoint, int countPoints, Function baseFunction):base(startPoint, endPoint, countPoints, baseFunction)
+            {
+                _type = type;
+            }
+
+            public Interpolation(TypeInterpolation type, IEnumerable<Point2D> points):base(points)
+            {
+                _type = type;
+            }
+            #endregion
+            #region METHODS
             public bool Equals(Interpolation other)
             {
-                return _nodes.Equals(other.Nodes) && _baseFunction.Equals(other._baseFunction) && _type == other._type;
+                return base.Equals(other) && _type == other._type;
             }
 
             public override bool Equals(object obj)
@@ -685,12 +760,16 @@ namespace Mathematics
 
             public override int GetHashCode()
             {
-                return _nodes.GetHashCode() ^ _baseFunction.GetHashCode() ^ _type.GetHashCode();
+                return base.GetHashCode() ^ _type.GetHashCode();
             }
 
             public override string ToString()
             {
-                return GetType().Name;
+                StringBuilder stringBuilder = new StringBuilder(base.ToString());
+                stringBuilder.AppendLine();
+                stringBuilder.Append("Type interpolation:" + "\t" + _type.ToString());
+
+                return stringBuilder.ToString();
             }
 
             private double Lagrange(double x)
@@ -698,17 +777,17 @@ namespace Mathematics
                 double sum = 0.0;
                 double p;
 
-                for(int i=0; i<_basePoints.Length; i++)
+                for (int i = 0; i < InterpolationPoints.Length; i++)
                 {
                     p = 1.0;
-                    for(int j=0; j<_basePoints.Length; j++)
+                    for (int j = 0; j < InterpolationPoints.Length; j++)
                     {
-                        if(j!=i)
+                        if (j != i)
                         {
-                            p *= (x - _basePoints[j].X) / (_basePoints[i].X - _basePoints[j].X);
+                            p *= (x - InterpolationPoints[j].X) / (InterpolationPoints[i].X - InterpolationPoints[j].X);
                         }
                     }
-                    sum += _basePoints[i].Y * p;
+                    sum += InterpolationPoints[i].Y * p;
                 }
 
                 return sum;
@@ -718,17 +797,17 @@ namespace Mathematics
             {
                 double sum = 0.0, p;
 
-                for(int i=0; i<=numberDifference; i++)
+                for (int i = 0; i <= numberDifference; i++)
                 {
                     p = 1.0;
-                    for(int j=0; j<=numberDifference; j++)
+                    for (int j = 0; j <= numberDifference; j++)
                     {
-                        if(i!=j)
+                        if (i != j)
                         {
-                            p *= (_basePoints[i].X - _basePoints[j].X);
+                            p *= (InterpolationPoints[i].X - InterpolationPoints[j].X);
                         }
                     }
-                    sum += (_basePoints[i].Y / p);
+                    sum += (InterpolationPoints[i].Y / p);
                 }
 
                 return sum;
@@ -738,7 +817,7 @@ namespace Mathematics
             {
                 List<double> dividedDifferences = new List<double>();
 
-                for(int i=1; i<_basePoints.Length; i++)
+                for (int i = 1; i < InterpolationPoints.Length; i++)
                 {
                     dividedDifferences.Add(GetDividedDifference(i));
                 }
@@ -748,15 +827,15 @@ namespace Mathematics
 
             private double Newton(double x)
             {
-                double res = _basePoints[0].Y, p, sum = 0.0;
+                double res = InterpolationPoints[0].Y, p, sum = 0.0;
                 List<double> differences = GetDividedDifferences();
 
-                for(int i=1; i<=differences.Count; i++)
+                for (int i = 1; i <= differences.Count; i++)
                 {
                     p = 1.0;
-                    for(int j=0; j<=i-1; j++)
+                    for (int j = 0; j <= i - 1; j++)
                     {
-                        p *= (x - _basePoints[j].X);
+                        p *= (x - InterpolationPoints[j].X);
                     }
                     sum += (differences[i - 1] * p);
                 }
@@ -774,10 +853,10 @@ namespace Mathematics
                 return 0.0;
             }
 
-            public double Calculate(Node node)
+            public override double Calculate(Node node)
             {
                 double res = 0.0;
-                switch(_type)
+                switch (_type)
                 {
                     case TypeInterpolation.NewtonPolynomial: res = Newton(node.X); break;
                     case TypeInterpolation.LagrangePolynomial: res = Lagrange(node.X); break;
@@ -788,8 +867,13 @@ namespace Mathematics
 
                 return res;
             }
+
+            private void OnTypeInterpolationChanged(TypeInterpolationChangedEventArgs e)
+            {
+                TypeInterpolationChanged?.Invoke(this, e);
+            }
             #endregion
-            #region PROPERTIES
+            #region PROPERTIE
             public TypeInterpolation InteprolationType
             {
                 get => _type;
@@ -802,11 +886,8 @@ namespace Mathematics
                     OnTypeInterpolationChanged(new TypeInterpolationChangedEventArgs(oldType, value));
                 }
             }
-            public Function InterpolationFunction { get => _baseFunction;}
-            public SortedNodes Nodes { get => _nodes; set => _nodes = value; }
-            public Point2D[] InterpolationPoints { get => _basePoints; set => _basePoints = value; }
             #endregion
-            #region EVENTS
+            #region EVENT
             public event EventHandler<TypeInterpolationChangedEventArgs> TypeInterpolationChanged;
             #endregion
             #region STATIC MEMBERS
