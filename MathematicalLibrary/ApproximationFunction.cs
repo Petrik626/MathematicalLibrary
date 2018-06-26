@@ -665,14 +665,18 @@ namespace Mathematics
 
             public abstract double Calculate(Node node);
 
-            public bool Equals(BaseApproximation other)
+            bool IEquatable<BaseApproximation>.Equals(BaseApproximation other)
             {
                 return _baseFunction.Equals(other._baseFunction) && _nodes.Equals(other._nodes);
             }
 
             public override bool Equals(object obj)
             {
-                return (obj is BaseApproximation) ? Equals((BaseApproximation)obj) : false;
+                BaseApproximation baseApp = obj as BaseApproximation;
+                if (baseApp == null) { return false; }
+                IEquatable<BaseApproximation> equatable = this;
+
+                return equatable.Equals(baseApp);
             }
 
             public override int GetHashCode()
