@@ -566,7 +566,7 @@ namespace Mathematics
 
         public enum TypeInterpolation
         {
-            NewtonPolynomial, LagrangePolynomial, HermitPolynomial, SplineInterpolation 
+            NewtonPolynomial, LagrangePolynomial, HermitPolynomial, CubicSplineInterpolation 
         }
 
         public sealed class TypeInterpolationChangedEventArgs:EventArgs
@@ -595,6 +595,7 @@ namespace Mathematics
             private SortedNodes _nodes;
             private readonly Function _baseFunction;
             private Point2D[] _basePoints;
+            private readonly int _amountPoints;
             #endregion
             #region CONSTRUCTORS
             public BaseApproximation(SortedNodes nodes, Function baseFunction)
@@ -602,6 +603,7 @@ namespace Mathematics
                 _nodes = nodes;
                 _baseFunction = baseFunction;
                 _basePoints = GetBasePoints(_nodes, _baseFunction);
+                _amountPoints = _nodes.Count;
             }
 
             public BaseApproximation(double startPoint, double endPoint, double step, Function baseFunction)
@@ -609,6 +611,7 @@ namespace Mathematics
                 _baseFunction = baseFunction;
                 _basePoints = GetBasePoints(startPoint, endPoint, step, _baseFunction);
                 _nodes = _basePoints.Select(p => new Node(p.X)).ToList();
+                _amountPoints = _nodes.Count;
             }
 
             public BaseApproximation(double startPoints, double endPoints, int countPoints, Function baseFunction)
@@ -616,6 +619,7 @@ namespace Mathematics
                 _baseFunction = baseFunction;
                 _basePoints = GetBasePoints(startPoints, endPoints, countPoints, _baseFunction);
                 _nodes = _basePoints.Select(p => new Node(p.X)).ToList();
+                _amountPoints = _nodes.Count;
             }
 
             public BaseApproximation(IEnumerable<Point2D> points)
@@ -623,6 +627,7 @@ namespace Mathematics
                 _baseFunction = new Function();
                 _basePoints = points.ToArray();
                 _nodes = _basePoints.Select(p => new Node(p.X)).ToList();
+                _amountPoints = _nodes.Count;
             }
             #endregion
             #region METHODS
@@ -702,6 +707,7 @@ namespace Mathematics
             public Function InterpolationFunction { get => _baseFunction; }
             public SortedNodes Nodes { get => _nodes; set => _nodes = value; }
             public Point2D[] InterpolationPoints { get => _basePoints; set => _basePoints = value; }
+            public int AmountPoints => _amountPoints;
             #endregion
             #region STATIC MEMBERS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -724,31 +730,93 @@ namespace Mathematics
             #endregion
         }
 
+        [StructLayout(LayoutKind.Auto)]
+        internal struct SplineSegment:IEquatable<SplineSegment>
+        {
+            #region FIELDS
+            private double _a;
+            private double _b;
+            private double _c;
+            private double _d;
+            private double _value;
+            #endregion
+            #region CONSTRUCTOR
+            public SplineSegment(double a, double b, double c, double d, double value)
+            {
+                _a = a;
+                _b = b;
+                _c = c;
+                _d = d;
+                _value = value;
+            }
+            #endregion
+            #region PROPERTIES
+            public double A { get => _a; set => _a = value; }
+            public double B { get => _b; set => _b = value; }
+            public double C { get => _c; set => _c = value; }
+            public double D { get => _d; set => _d = value; }
+            public double Value { get => _value; set => _value = value; }
+            #endregion
+            #region METHODS
+            public bool Equals(SplineSegment other)
+            {
+                return (_a == other._a) && (_b == other._b) && (_c == other._c) && (_d == other._d) && (_value == other._value);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return (obj is SplineSegment) ? Equals((SplineSegment)obj) : false;
+            }
+
+            public override int GetHashCode()
+            {
+                return _a.GetHashCode() ^ _b.GetHashCode() ^ _c.GetHashCode() ^ _d.GetHashCode() ^ _value.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                StringBuilder builder = new StringBuilder();
+                builder.Append("A: " + _a.ToString() + "\n");
+                builder.Append("B: " + _b.ToString() + "\n");
+                builder.Append("C: " + _c.ToString() + "\n");
+                builder.Append("D: " + _d.ToString() + "\n");
+                builder.Append("Value: " + _value.ToString() + "\n");
+
+                return builder.ToString();
+            }
+            #endregion
+        }
+
         [Serializable]
         public sealed class Interpolation:BaseApproximation, IEquatable<Interpolation>
         {
             #region FIELD
             private TypeInterpolation _type;
+            private SplineSegment[] _segments;
             #endregion
             #region CONSTRUCTORS
             public Interpolation(TypeInterpolation type, SortedNodes nodes, Function baseFunction):base(nodes,baseFunction)
             {
                 _type = type;
+                SplineBuilt();
             }
 
             public Interpolation(TypeInterpolation type, double startPoint, double endPoints, double step, Function baseFunction):base(startPoint, endPoints, step, baseFunction)
             {
                 _type = type;
+                SplineBuilt();
             }
 
             public Interpolation(TypeInterpolation type, double startPoint, double endPoint, int countPoints, Function baseFunction):base(startPoint, endPoint, countPoints, baseFunction)
             {
                 _type = type;
+                SplineBuilt();
             }
 
             public Interpolation(TypeInterpolation type, IEnumerable<Point2D> points):base(points)
             {
                 _type = type;
+                SplineBuilt();
             }
             #endregion
             #region METHODS
@@ -852,9 +920,91 @@ namespace Mathematics
                 return 0.0;
             }
 
+            private void SplineBuilt()
+            {
+                int amountPoints = InterpolationPoints.Length;
+                _segments = new SplineSegment[amountPoints];
+                double[] alpha = new double[amountPoints - 1];
+                double[] betta = new double[amountPoints - 1];
+                double step1, step2;
+                double a, b, c, f, z;
+
+                for (int i=0; i<_segments.Length; i++)
+                {
+                    _segments[i].Value = InterpolationPoints[i].X;
+                    _segments[i].A = InterpolationPoints[i].Y;
+                }
+
+                _segments[0].C = _segments[amountPoints - 1].C = 0.0;
+
+                alpha[0] = betta[0] = 0.0;
+
+                for(int i = 1; i< amountPoints - 1; i++)
+                {
+                    step1 = InterpolationPoints[i].X - InterpolationPoints[i - 1].X;
+                    step2 = InterpolationPoints[i + 1].X - InterpolationPoints[i].X;
+
+                    a = step1;
+                    c = 2.0 * (step1 + step2);
+                    b = step2;
+                    f = 6.0 * (((InterpolationPoints[i + 1].Y - InterpolationPoints[i].Y) / step2) - ((InterpolationPoints[i].Y - InterpolationPoints[i - 1].Y) / step1));
+                    z = a * alpha[i - 1] + c;
+
+                    alpha[i] = -b / z;
+                    betta[i] = (f - a * betta[i - 1]) / z;
+                }
+
+                for(int i = amountPoints - 2; i > 0; i--)
+                {
+                    _segments[i].C = alpha[i] * _segments[i + 1].C + betta[i];
+                }
+
+                for(int i = amountPoints - 1; i > 0; i--)
+                {
+                    step1 = InterpolationPoints[i].X - InterpolationPoints[i - 1].X;
+
+                    _segments[i].D = (_segments[i].C - _segments[i - 1].C) / step1;
+                    _segments[i].B = step1 * (2.0 * _segments[i].C + _segments[i - 1].C) / 6.0 + (InterpolationPoints[i].Y - InterpolationPoints[i - 1].Y) / step1;
+                }
+            }
+
             private double Spline(double x)
             {
-                return 0.0;
+                SplineSegment segment;
+                int amountSegments = _segments.Length;
+                double dx;
+
+                if (x <= _segments[0].Value)
+                {
+                    segment = _segments[0];
+                }
+                else if (x >= _segments[amountSegments - 1].Value)
+                {
+                    segment = _segments[amountSegments - 1];
+                }
+                else
+                {
+                    int i = 0, j = amountSegments - 1;
+                    int k;
+                    while(i + 1 < j)
+                    {
+                        k = i + (j - i) / 2;
+
+                        if (x <= _segments[k].Value)
+                        {
+                            j = k;
+                        }
+                        else
+                        {
+                            i = k;
+                        }
+                    }
+
+                    segment = _segments[j];
+                }
+
+                dx = x - segment.Value;
+                return segment.A + (segment.B + (segment.C / 2.0 + segment.D * dx / 6.0) * dx) * dx;
             }
 
             public override double Calculate(Node node)
@@ -865,7 +1015,7 @@ namespace Mathematics
                     case TypeInterpolation.NewtonPolynomial: res = Newton(node.X); break;
                     case TypeInterpolation.LagrangePolynomial: res = Lagrange(node.X); break;
                     case TypeInterpolation.HermitPolynomial: res = Hermit(node.X); break;
-                    case TypeInterpolation.SplineInterpolation: res = Spline(node.X); break;
+                    case TypeInterpolation.CubicSplineInterpolation: res = Spline(node.X); break;
                     default: throw new ArgumentException();
                 }
 
