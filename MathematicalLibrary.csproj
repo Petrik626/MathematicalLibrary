@@ -112,6 +112,7 @@
   <ItemGroup>
     <Compile Include="MathematicalLibrary\AnalyticFunctions.cs" />
     <Compile Include="MathematicalLibrary\ApproximationFunction.cs" />
+    <Compile Include="MathematicalLibrary\SolvingEquations.cs" />
     <Compile Include="MathematicalLibrary\MathematicsObjects.cs" />
     <Compile Include="MathematicalLibrary\obj\Debug\TemporaryGeneratedFile_036C0B5B-1481-4323-8D20-8F5ADCB23D92.cs" />
     <Compile Include="MathematicalLibrary\obj\Debug\TemporaryGeneratedFile_5937a670-0e60-4077-877b-f7221da3dda1.cs" />
