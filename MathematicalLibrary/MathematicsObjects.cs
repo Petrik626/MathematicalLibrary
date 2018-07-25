@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Text;
 using static MathematicalLibrary.Functions.DoubleFunction;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace Mathematics
 {
@@ -55,7 +57,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public struct Complex : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Complex>, IEnumerable<double>, IArithmeticOperations<Complex, Complex>, IComparisonOperations<Complex>
+        public struct Complex : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Complex>, IEnumerable<double>, IArithmeticOperations<Complex, Complex>, IComparisonOperations<Complex>, ISerializable
         {
             #region FIELDS
             private readonly double _re;
@@ -64,6 +66,13 @@ namespace Mathematics
             #region CONSTRUCTORS
             public Complex(double re = 0.0, double im = 0.0) { _re = re; _im = im; }
             public Complex(Complex obj) : this(obj._re, obj._im) { }
+
+            [SecurityPermission(SecurityAction.Demand,SerializationFormatter = true)]
+            private Complex(SerializationInfo info, StreamingContext context)
+            {
+                _re = info.GetDouble("Re");
+                _im = info.GetDouble("Im");
+            }
             #endregion
             #region STATIC MEMBERS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -649,6 +658,12 @@ namespace Mathematics
                 throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
 
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("Re", _re);
+                info.AddValue("Im", _im);
+            }
             #endregion
             #region TYPE CONVERSIONS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -718,7 +733,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public struct Point2D : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point2D>, IEnumerable<double>, IArithmeticOperations<Point2D, Vector>, IComparisonOperations<Point2D>
+        public struct Point2D : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point2D>, IEnumerable<double>, IArithmeticOperations<Point2D, Vector>, IComparisonOperations<Point2D>, ISerializable
         {
             #region FIELDS
             private readonly double _x;
@@ -732,6 +747,13 @@ namespace Mathematics
             }
 
             public Point2D(Point2D obj) : this(obj._x, obj._y) { }
+
+            [SecurityPermission(SecurityAction.Demand,SerializationFormatter = true)]
+            private Point2D(SerializationInfo info, StreamingContext context)
+            {
+                _x = info.GetDouble("X");
+                _y = info.GetDouble("Y");
+            }
             #endregion
             #region STATIC MEMBERS
 
@@ -1125,6 +1147,13 @@ namespace Mathematics
             {
                 throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("X", _x);
+                info.AddValue("Y", _y);
+            }
             #endregion
             #region PROPERTIES
             public double X { get => _x; }
@@ -1143,7 +1172,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public sealed class Vector : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Vector>, IEnumerable<double>, IArithmeticOperations<Vector, Vector>, IArithmeticOperations<Matrix, Vector>, IComparisonOperations<Vector>
+        public sealed class Vector : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Vector>, IEnumerable<double>, IArithmeticOperations<Vector, Vector>, IArithmeticOperations<Matrix, Vector>, IComparisonOperations<Vector>, ISerializable
         {
             #region FIELDS
             private readonly double[] _components;
@@ -1261,6 +1290,12 @@ namespace Mathematics
                 _components = coords.Select(n => Convert.ToDouble(n)).ToArray<double>();
             }
 
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            private Vector(SerializationInfo info, StreamingContext context)
+            {
+                _dimensions = info.GetInt32("Dimension");
+                _components = (double[])info.GetValue("Components", typeof(double[]));
+            }
             #endregion
             #region METHODS
 
@@ -1494,6 +1529,13 @@ namespace Mathematics
             {
                 throw new NotSupportedException("This operation has not been supported by mathematical object");
             }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("Dimension", _dimensions);
+                info.AddValue("Components", _components, typeof(double[]));
+            }            
             #endregion
             #region STATIC MEMBERS
 
@@ -1832,7 +1874,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public class Matrix : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Matrix>, IArithmeticOperations<Matrix, Matrix>, IComparisonOperations<Matrix>
+        public class Matrix : IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Matrix>, IArithmeticOperations<Matrix, Matrix>, IComparisonOperations<Matrix>, ISerializable
         {
             #region FIELDS
             private readonly int _numberOfRow;
@@ -1887,6 +1929,14 @@ namespace Mathematics
             public Matrix(double[,] components) : this(components.GetLength(0), components.GetLength(1), components) { }
 
             public Matrix(Matrix obj) : this(obj._components) { }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            protected Matrix(SerializationInfo info, StreamingContext context)
+            {
+                _numberOfRow = info.GetInt32("NumberOfRow");
+                _numberOfColumn = info.GetInt32("NumberOfColumn");
+                _components = (double[,])info.GetValue("Components", typeof(double[,]));
+            }
             #endregion
             #region METHODS
 
@@ -2409,6 +2459,14 @@ namespace Mathematics
             bool IComparisonOperations<Matrix>.OperationIsLessOrEqual(Matrix obj)
             {
                 throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("NumberOfRow", _numberOfRow);
+                info.AddValue("NumberOfColumn", _numberOfColumn);
+                info.AddValue("Components", _components, typeof(double[,]));
             }
             #endregion
             #region PROPERTIES
@@ -3094,7 +3152,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public sealed class Point3D:IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point3D>, IEnumerable<double>, IArithmeticOperations<Point3D, Vector>, IComparisonOperations<Point3D>
+        public sealed class Point3D:IMathematicalObject, IArithmeticOperations, IComparisonOperations, IEquatable<Point3D>, IEnumerable<double>, IArithmeticOperations<Point3D, Vector>, IComparisonOperations<Point3D>, ISerializable
         {
             #region FIELDS
             private readonly double _x;
@@ -3115,6 +3173,14 @@ namespace Mathematics
                 _x = obj._x;
                 _y = obj._y;
                 _z = obj._z;
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            private Point3D(SerializationInfo info, StreamingContext context)
+            {
+                _x = info.GetDouble("X");
+                _y = info.GetDouble("Y");
+                _z = info.GetDouble("Z");
             }
             #endregion
             #region METHODS
@@ -3276,6 +3342,14 @@ namespace Mathematics
             bool IComparisonOperations<Point3D>.OperationIsLessOrEqual(Point3D obj)
             {
                 throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("X", _x);
+                info.AddValue("Y", _y);
+                info.AddValue("Z", _z);
             }
             #endregion
             #region STATIC MEMBERS
@@ -3524,7 +3598,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto),Serializable]
-        public sealed class Quaternion:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Quaternion>,IEnumerable<double>, IArithmeticOperations<Quaternion, Quaternion>, IComparisonOperations<Quaternion>
+        public sealed class Quaternion:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Quaternion>,IEnumerable<double>, IArithmeticOperations<Quaternion, Quaternion>, IComparisonOperations<Quaternion>, ISerializable
         {
             #region FIELDS
             private readonly double _x;
@@ -3583,6 +3657,15 @@ namespace Mathematics
                 _y = z1.Im;
                 _x = z2.Re;
                 _w = z2.Im;
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            private Quaternion(SerializationInfo info, StreamingContext context)
+            {
+                _x = info.GetDouble("X");
+                _y = info.GetDouble("Y");
+                _z = info.GetDouble("Z");
+                _w = info.GetDouble("W");
             }
             #endregion
             #region METHODS
@@ -3789,6 +3872,15 @@ namespace Mathematics
             bool IComparisonOperations<Quaternion>.OperationIsLessOrEqual(Quaternion obj)
             {
                 throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("X", _x);
+                info.AddValue("Y", _y);
+                info.AddValue("Z", _z);
+                info.AddValue("W", _w);
             }
             #endregion
             #region STATIC MEMBERS
@@ -4180,7 +4272,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto),Serializable]
-        public sealed class Function:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Function>, IArithmeticOperations<Function, Function>, IComparisonOperations<Function>
+        public sealed class Function:IMathematicalObject,IArithmeticOperations,IComparisonOperations,IEquatable<Function>, IArithmeticOperations<Function, Function>, IComparisonOperations<Function>, ISerializable
         {
             #region FIELDS
             private readonly Func<double, double> _expression;
@@ -4194,6 +4286,12 @@ namespace Mathematics
             public Function(Func<double,double> expression=null)
             {
                 _expression = expression ?? throw new ArgumentNullException("The Expression is null");
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            private Function(SerializationInfo info, StreamingContext context)
+            {
+                _expression = (Func<double, double>)info.GetValue("Expression", typeof(Func<double, double>));
             }
             #endregion
             #region METHODS
@@ -4371,6 +4469,12 @@ namespace Mathematics
             bool IComparisonOperations<Function>.OperationIsLessOrEqual(Function obj)
             {
                 throw new NotSupportedException("This operation has not been supported by mathematical object");
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("Expression", _expression, typeof(Func<double, double>));
             }
             #endregion
             #region OPERATORS
