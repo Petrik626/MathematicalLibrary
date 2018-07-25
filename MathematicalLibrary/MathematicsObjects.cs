@@ -2840,7 +2840,7 @@ namespace Mathematics
         }
 
         [StructLayout(LayoutKind.Auto), Serializable]
-        public sealed class Tensor : Matrix, IArithmeticOperations<Tensor, Tensor>
+        public sealed class Tensor : Matrix, IArithmeticOperations<Tensor, Tensor>, ISerializable
         {
             #region FIELD
             private readonly int _rank;
@@ -2851,11 +2851,17 @@ namespace Mathematics
             public Tensor(double[,] components) : base(components) => _rank = components.GetLength(0);
             public Tensor(Tensor obj) : base(obj.Components) => _rank = obj.CountOfRow;
             public Tensor() : base() => _rank = 2;
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public Tensor(SerializationInfo info, StreamingContext context):base(info,context)
+            {
+                _rank = info.GetInt32("Rank");
+            }
             #endregion
             #region METHODS
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public override string Show()
+            public override sealed string Show()
             {
                 return base.ToString();
             }
@@ -2927,6 +2933,13 @@ namespace Mathematics
             Tensor IArithmeticOperations<Tensor,Tensor>.Division(Tensor obj)
             {
                 throw new NotSupportedException();
+            }
+
+            [SecurityPermission(SecurityAction.Demand,SerializationFormatter = true)]
+            public override sealed void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                base.GetObjectData(info, context);
+                info.AddValue("Rank", _rank);
             }
             #endregion
             #region STATIC MEMBERS
