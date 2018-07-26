@@ -7,13 +7,15 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using System.Collections;
 using Mathematics.Objects;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace Mathematics
 {
     namespace Approximation
     {
-        [StructLayout(LayoutKind.Auto),Serializable]
-        public struct Node:IEquatable<Node>,IComparable<Node>,IComparable
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public struct Node:IEquatable<Node>,IComparable<Node>,IComparable,ISerializable
         {
             #region FIELD
             private readonly double _x;
@@ -21,6 +23,12 @@ namespace Mathematics
             #region CONSTRUCTORS
             public Node(double x) => _x = x;
             public Node(Node obj) : this(obj._x) { }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            private Node(SerializationInfo info, StreamingContext context)
+            {
+                _x = info.GetDouble("Value");
+            }
             #endregion
             #region METHODS
             public bool Equals(Node other)
@@ -52,9 +60,15 @@ namespace Mathematics
             {
                 return _x.ToString();
             }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("Value", _x);
+            }
             #endregion
             #region PROPERTI
-            public double X => _x;
+            public double Value => _x;
             #endregion
             #region STATIC MEMBERS
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -205,17 +219,23 @@ namespace Mathematics
             #endregion
         }
 
-        [Serializable]
-        public sealed class SortedNodes:IEnumerable<Node>, IList<Node>, ICollection<Node>, IEquatable<SortedNodes>, IEnumerable, IList, ICollection
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public sealed class SortedNodes:IEnumerable<Node>, IList<Node>, ICollection<Node>, IEquatable<SortedNodes>, IEnumerable, IList, ICollection, ISerializable
         {
             #region FIELDS
             private List<Node> _nodes;
-            private readonly Func<Node, double> _keySelector = (node) => node.X;
+            private readonly Func<Node, double> _keySelector = (node) => node.Value;
             #endregion
             #region CONSTRUCTORS
             public SortedNodes() => _nodes = new List<Node>();
             public SortedNodes(IEnumerable<Node> nodes) => _nodes = SortedNodesMethod(nodes);
             public SortedNodes(int capacity) => _nodes = new List<Node>(capacity);
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            private SortedNodes(SerializationInfo info, StreamingContext context)
+            {
+                _nodes = (List<Node>)info.GetValue("Nodes", typeof(List<Node>));
+            }
             #endregion
             #region METHODS
             private List<Node> SortedNodesMethod(IEnumerable<Node> nodes)
@@ -370,7 +390,7 @@ namespace Mathematics
 
                 foreach(var el in _nodes)
                 {
-                    builder.Append(el.X.ToString() + "\n");
+                    builder.Append(el.Value.ToString() + "\n");
                 }
 
                 return builder.ToString();
@@ -475,6 +495,12 @@ namespace Mathematics
             {
                 return _nodes.Exists(match);
             }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("Nodes", _nodes, typeof(List<Node>));
+            }
             #endregion
             #region PROPERTIES
             public int Count => _nodes.Count;
@@ -569,6 +595,7 @@ namespace Mathematics
             NewtonPolynomial, LagrangePolynomial, HermitPolynomial, CubicSplineInterpolation 
         }
 
+        [StructLayout(LayoutKind.Auto), Serializable]
         public sealed class TypeInterpolationChangedEventArgs:EventArgs
         {
             #region FIELDS
@@ -588,8 +615,8 @@ namespace Mathematics
             #endregion
         }
 
-        [Serializable]
-        public abstract class BaseApproximation:IEquatable<BaseApproximation>
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public abstract class BaseApproximation:IEquatable<BaseApproximation>, ISerializable
         {
             #region FIELDS
             private SortedNodes _nodes;
@@ -628,6 +655,15 @@ namespace Mathematics
                 _basePoints = points.ToArray();
                 _nodes = _basePoints.Select(p => new Node(p.X)).ToList();
                 _amountPoints = _nodes.Count;
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            protected BaseApproximation(SerializationInfo info, StreamingContext context)
+            {
+                _nodes = (SortedNodes)info.GetValue("Nodes", typeof(SortedNodes));
+                _baseFunction = (Function)info.GetValue("Function", typeof(Function));
+                _basePoints = (Point2D[])info.GetValue("Points", typeof(Point2D[]));
+                _amountPoints = info.GetInt32("AmountPoints");
             }
             #endregion
             #region METHODS
@@ -701,6 +737,15 @@ namespace Mathematics
                 builder.Append("Function name:" + "\t" + nameFunction);
 
                 return builder.ToString();
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("Nodes", _nodes, typeof(SortedNodes));
+                info.AddValue("Function", _baseFunction, typeof(Function));
+                info.AddValue("Points", _basePoints, typeof(Point2D[]));
+                info.AddValue("AmountPoints", _amountPoints);
             }
             #endregion
             #region PROPERTIES
@@ -787,8 +832,8 @@ namespace Mathematics
             #endregion
         }
 
-        [Serializable]
-        public sealed class Interpolation:BaseApproximation, IEquatable<Interpolation>
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public sealed class Interpolation:BaseApproximation, IEquatable<Interpolation>, ISerializable
         {
             #region FIELD
             private TypeInterpolation _type;
@@ -817,6 +862,12 @@ namespace Mathematics
             {
                 _type = type;
                 SplineBuilt();
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            private Interpolation(SerializationInfo info, StreamingContext context):base(info, context)
+            {
+                _type = (TypeInterpolation)info.GetValue("Type", typeof(TypeInterpolation));
             }
             #endregion
             #region METHODS
@@ -1012,10 +1063,10 @@ namespace Mathematics
                 double res = 0.0;
                 switch (_type)
                 {
-                    case TypeInterpolation.NewtonPolynomial: res = Newton(node.X); break;
-                    case TypeInterpolation.LagrangePolynomial: res = Lagrange(node.X); break;
-                    case TypeInterpolation.HermitPolynomial: res = Hermit(node.X); break;
-                    case TypeInterpolation.CubicSplineInterpolation: res = Spline(node.X); break;
+                    case TypeInterpolation.NewtonPolynomial: res = Newton(node.Value); break;
+                    case TypeInterpolation.LagrangePolynomial: res = Lagrange(node.Value); break;
+                    case TypeInterpolation.HermitPolynomial: res = Hermit(node.Value); break;
+                    case TypeInterpolation.CubicSplineInterpolation: res = Spline(node.Value); break;
                     default: throw new ArgumentException();
                 }
 
@@ -1025,6 +1076,18 @@ namespace Mathematics
             private void OnTypeInterpolationChanged(TypeInterpolationChangedEventArgs e)
             {
                 TypeInterpolationChanged?.Invoke(this, e);
+            }
+
+            public override sealed void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                base.GetObjectData(info, context);
+                info.AddValue("Type", _type, typeof(TypeInterpolation));
+            }
+
+            [OnDeserialized]
+            private void OnDeserialized(StreamingContext context)
+            {
+                SplineBuilt();
             }
             #endregion
             #region PROPERTIE

@@ -6,13 +6,15 @@ using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using Mathematics.Objects;
 using static System.Math;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
 
 namespace SystemEquations
 {
     namespace LinearAlgebraicEquations
     {
-        [StructLayout(LayoutKind.Auto)]
-        public sealed class SystemLinearAlgebraicEquations:IEquatable<SystemLinearAlgebraicEquations>
+        [StructLayout(LayoutKind.Auto), Serializable]
+        public sealed class SystemLinearAlgebraicEquations:IEquatable<SystemLinearAlgebraicEquations>, ISerializable
         {
             #region FIELDS
             private readonly Vector _rightPart;
@@ -29,6 +31,13 @@ namespace SystemEquations
             {
                 _systemMatrix = systemMatrix ?? new Matrix();
                 _rightPart = rightPart ?? new Vector();
+            }
+
+            [SecurityPermission(SecurityAction.Demand, SerializationFormatter = true)]
+            private SystemLinearAlgebraicEquations(SerializationInfo info, StreamingContext context)
+            {
+                _rightPart = (Vector)info.GetValue("RightPart", typeof(Vector));
+                _systemMatrix = (Matrix)info.GetValue("SystemMatrix", typeof(Matrix));
             }
             #endregion
             #region METHODS
@@ -193,6 +202,13 @@ namespace SystemEquations
                 }
 
                 return resVector;
+            }
+
+            [SecurityPermission(SecurityAction.Demand,SerializationFormatter = true)]
+            public void GetObjectData(SerializationInfo info, StreamingContext context)
+            {
+                info.AddValue("RightPart", _rightPart, typeof(Vector));
+                info.AddValue("SystemMatrix", _systemMatrix, typeof(Matrix));
             }
             #endregion
             #region STATIC MEMBERS
